@@ -1,14 +1,15 @@
+// components/ElectricityCalculator.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { statesList } from '../lib/statesData'; // Fixed Relative Path
 import { 
   Settings, Zap, Lightbulb, ShieldCheck, MapPin, 
   Menu, X, BarChart3, Scale, Info, HelpCircle, ChevronDown, 
   Home, Building2, TrendingUp, DollarSign, ListOrdered, FileSearch, TableProperties
 } from 'lucide-react';
 
-// --- TYPESCRIPT INTERFACES (Fixes the Vercel Build Errors) ---
 interface Slab {
   max: number;
   rate: number;
@@ -25,7 +26,7 @@ interface TariffDetails {
 interface TariffData {
   Domestic: TariffDetails;
   Commercial: TariffDetails;
-  [key: string]: TariffDetails; // Allows dynamic string indexing
+  [key: string]: TariffDetails;
 }
 
 interface SlabBreakdown {
@@ -45,15 +46,6 @@ interface BillResult {
   fixedCharge: number;
   meterRent: number;
 }
-
-// --- DATA STRUCTURES ---
-const statesList = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
-  "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", 
-  "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", 
-  "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
-];
 
 const defaultTariffData: Record<string, TariffData> = {};
 const standardDomesticSlabs: Slab[] = [{ max: 100, rate: 3.50 }, { max: 300, rate: 5.50 }, { max: 500, rate: 7.50 }, { max: Infinity, rate: 8.50 }];
@@ -138,7 +130,6 @@ const AdUnit = ({ className = "my-8 rounded-2xl overflow-hidden shadow-neu-inset
   </aside>
 );
 
-// Strictly Typed Select Component
 interface NeuSelectProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -166,7 +157,6 @@ const NeuSelect: React.FC<NeuSelectProps> = ({ value, onChange, options, classNa
   </div>
 );
 
-// --- MAIN COMPONENT ---
 export default function ElectricityCalculator({ initialState = 'Maharashtra' }: { initialState?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
