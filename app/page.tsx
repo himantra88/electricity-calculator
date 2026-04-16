@@ -20,7 +20,7 @@ const defaultTariffData: Record<string, any> = {};
 const standardDomestic = { slabs: [{ max: 100, rate: 3.50 }, { max: 300, rate: 5.50 }, { max: 500, rate: 7.50 }, { max: Infinity, rate: 8.50 }] };
 const standardCommercial = { slabs: [{ max: 200, rate: 7.50 }, { max: Infinity, rate: 9.50 }] };
 
-// FIX: Generate varied base parameters for each state so the table visibly updates
+// Generate varied base parameters for each state so the table visibly updates
 statesList.forEach((state, index) => {
   const variation = (index % 7); 
   
@@ -608,6 +608,8 @@ export default function ElectricityCalculator() {
             <h3 className="text-2xl font-black mb-10 text-neuDark flex items-center gap-3">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><MapPin className="text-neuGreen h-6 w-6" /></div> Quick Links: State Bill Calculators
             </h3>
+            
+            {/* UPDATED: Fixed height 40px blocks with icon and color transition */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
               {statesList.map(s => (
                 <a 
@@ -617,12 +619,14 @@ export default function ElectricityCalculator() {
                     setState(s); 
                     window.scrollTo({top: 0, behavior: 'smooth'});
                   }} 
-                  className="flex items-center justify-center h-40 w-full text-xs sm:text-sm text-gray-600 font-bold bg-neuBg shadow-neu hover:shadow-neu-inset active:shadow-neu-inset px-3 py-2 rounded-xl hover:text-neuGreen transition-all duration-300 text-center border border-transparent hover:border-[#e2e8e4] leading-tight"
+                  className="group flex items-center justify-start h-[40px] w-full text-xs sm:text-sm text-gray-600 font-bold bg-neuBg shadow-neu hover:shadow-neu-inset active:shadow-neu-inset px-4 rounded-xl hover:text-neuGreen hover:bg-[#e8f0eb] transition-all duration-300 border border-transparent hover:border-[#e2e8e4]"
                 >
-                  {s}
+                  <Zap className="h-4 w-4 text-gray-400 group-hover:text-neuGreen shrink-0 mr-2 transition-colors" />
+                  <span className="truncate">{s}</span>
                 </a>
               ))}
             </div>
+            
           </div>
           
           <div className="border-t-2 border-dashed border-[#d1d9d3] pt-10 flex flex-col md:flex-row justify-between items-center gap-8 text-sm text-gray-500 font-bold">
