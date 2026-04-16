@@ -2,13 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+body {
+  background-color: #f0f5f1; 
+  color: #1a3320; 
+  /* Smooth scrolling for anchor links */
+  scroll-behavior: smooth; 
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: white;
+/* AdSense Placeholder Styling (for development) */
+.adsbygoogle-placeholder {
+  background: repeating-linear-gradient(
+    45deg,
+    #e2e8e4,
+    #e2e8e4 10px,
+    #f0f5f1 10px,
+    #f0f5f1 20px
+  );
+  border: 1px dashed #a3b8aa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7a9482;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  min-height: 90px;
 }
