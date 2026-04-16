@@ -617,7 +617,7 @@ export default function ElectricityCalculator() {
                     setState(s); 
                     window.scrollTo({top: 0, behavior: 'smooth'});
                   }} 
-                  className="flex items-center justify-center h-20 w-full text-xs sm:text-sm text-gray-600 font-bold bg-neuBg shadow-neu hover:shadow-neu-inset active:shadow-neu-inset px-3 py-2 rounded-xl hover:text-neuGreen transition-all duration-300 text-center border border-transparent hover:border-[#e2e8e4] leading-tight"
+                  className="flex items-center justify-center h-40 w-full text-xs sm:text-sm text-gray-600 font-bold bg-neuBg shadow-neu hover:shadow-neu-inset active:shadow-neu-inset px-3 py-2 rounded-xl hover:text-neuGreen transition-all duration-300 text-center border border-transparent hover:border-[#e2e8e4] leading-tight"
                 >
                   {s}
                 </a>
