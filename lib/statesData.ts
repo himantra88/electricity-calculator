@@ -8,7 +8,6 @@ export const statesList = [
   "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
 ];
 
-// Automatically generate SEO-friendly slugs (e.g., "Andhra Pradesh" -> "andhra-pradesh")
 export const stateSlugs = statesList.map(state => ({
   name: state,
   slug: state.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and')
