@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Settings, Zap, Lightbulb, ShieldCheck, MapPin, 
   Menu, X, BarChart3, Scale, Info, HelpCircle, ChevronDown, 
-  Home, Building2, TrendingUp, DollarSign, ArrowRight
+  Home, Building2, TrendingUp, DollarSign, ListOrdered, FileSearch, TableProperties, ArrowRight
 } from 'lucide-react';
 import type { TariffData, TariffDetails } from '../lib/statesData';
 
@@ -61,34 +61,37 @@ const faqs = [
   { q: "Does the national average rate affect my bill?", a: "No, electricity is a state subject in India. Your bill is strictly based on your specific state's tariff." }
 ];
 
-// --- CLAYMORPHIC UTILITY CLASSES ---
-const clayPanel = "bg-white rounded-[2.5rem] shadow-[12px_12px_24px_#D6D9E6,inset_-4px_-4px_10px_rgba(0,0,0,0.03),inset_4px_4px_10px_rgba(255,255,255,1)]";
-const clayPanelColored = (bgColor: string, shadowColor: string) => `bg-[${bgColor}] rounded-[2.5rem] shadow-[12px_12px_24px_#D6D9E6,inset_-4px_-4px_10px_rgba(0,0,0,0.05),inset_4px_4px_10px_rgba(255,255,255,0.7)]`;
-const clayInput = "bg-[#F0F2F8] rounded-[1.5rem] shadow-[inset_4px_4px_8px_#D6D9E6,inset_-4px_-4px_8px_#FFFFFF] text-gray-700 outline-none focus:ring-2 focus:ring-[#7B61FF] focus:bg-white transition-all";
-const clayBtnPrimary = "bg-[#7B61FF] rounded-[1.5rem] text-white font-bold shadow-[8px_8px_20px_rgba(123,97,255,0.35),inset_-4px_-4px_8px_rgba(0,0,0,0.15),inset_4px_4px_8px_rgba(255,255,255,0.25)] active:shadow-[inset_4px_4px_10px_rgba(0,0,0,0.2),inset_-4px_-4px_10px_rgba(255,255,255,0.1)] active:scale-[0.98] transition-all duration-200";
-const clayBtnSecondary = "bg-white rounded-[1.5rem] text-[#7B61FF] font-bold shadow-[6px_6px_15px_#D6D9E6,inset_-3px_-3px_6px_rgba(0,0,0,0.03),inset_3px_3px_6px_rgba(255,255,255,1)] active:shadow-[inset_3px_3px_8px_#D6D9E6,inset_-3px_-3px_8px_#FFFFFF] active:scale-[0.98] transition-all duration-200";
-const clayIcon = "bg-white rounded-[1.2rem] shadow-[5px_5px_10px_#D6D9E6,inset_-2px_-2px_5px_rgba(0,0,0,0.02),inset_2px_2px_5px_rgba(255,255,255,1)] flex items-center justify-center p-3";
+// --- CLAYMORPHISM STYLES ---
+const clayBg = "bg-[#F0F3F8]";
+const clayText = "text-[#3D405B]";
+const clayAccent = "text-[#7B61FF]";
+const clayCard = "bg-[#F0F3F8] rounded-[2.5rem] shadow-[10px_10px_20px_#ced4da,-10px_-10px_20px_#ffffff,inset_3px_3px_5px_rgba(255,255,255,1),inset_-3px_-3px_5px_rgba(0,0,0,0.03)] border-2 border-white/50";
+const clayCardPrimary = "bg-[#7B61FF] rounded-[2.5rem] shadow-[10px_10px_20px_#ced4da,-10px_-10px_20px_#ffffff,inset_3px_3px_5px_rgba(255,255,255,0.3),inset_-3px_-3px_5px_rgba(0,0,0,0.1)] text-white border-2 border-[#8C76FF]";
+const clayInput = "bg-[#F0F3F8] rounded-[1.5rem] shadow-[inset_5px_5px_10px_#ced4da,inset_-5px_-5px_10px_#ffffff] border-none outline-none focus:ring-2 focus:ring-[#7B61FF] focus:bg-white transition-all";
+const clayBtn = "bg-[#7B61FF] text-white rounded-[1.5rem] shadow-[6px_6px_12px_#ced4da,-6px_-6px_12px_#ffffff,inset_3px_3px_6px_rgba(255,255,255,0.3),inset_-3px_-3px_6px_rgba(0,0,0,0.15)] active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2),inset_-4px_-4px_8px_rgba(255,255,255,0.2)] active:scale-[0.98] transition-all font-bold border border-[#8C76FF]";
+const clayBtnSecondary = "bg-[#F0F3F8] text-[#7B61FF] rounded-[1rem] shadow-[5px_5px_10px_#ced4da,-5px_-5px_10px_#ffffff,inset_2px_2px_4px_rgba(255,255,255,1),inset_-2px_-2px_4px_rgba(0,0,0,0.03)] active:shadow-[inset_5px_5px_10px_#ced4da,inset_-5px_-5px_10px_#ffffff] active:scale-[0.98] transition-all font-bold border border-white";
+const clayIcon = "bg-[#F0F3F8] rounded-[1.2rem] shadow-[5px_5px_10px_#ced4da,-5px_-5px_10px_#ffffff,inset_2px_2px_4px_rgba(255,255,255,1),inset_-2px_-2px_4px_rgba(0,0,0,0.03)] p-3 flex items-center justify-center border border-white";
 
 // --- REUSABLE WIDGETS ---
-const AdUnit = ({ className = `my-8 ${clayInput} p-1` }) => (
+const AdUnit = ({ className = `my-8 ${clayInput} p-2` }) => (
   <aside className={`w-full ${className}`}>
-    <div className="w-full h-[100px] flex items-center justify-center text-sm font-bold text-[#A0A3B1] uppercase tracking-widest rounded-[1.2rem] border-2 border-dashed border-[#D6D9E6]/50">
+    <div className="w-full h-[100px] flex items-center justify-center text-sm font-bold text-gray-400 uppercase tracking-widest border-2 border-dashed border-gray-300 rounded-[1.2rem]">
       Advertisement Space
     </div>
   </aside>
 );
 
-interface StyledSelectProps {
+interface ClaySelectProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: (string | { val: string; label: string })[];
   className?: string;
 }
 
-const StyledSelect: React.FC<StyledSelectProps> = ({ value, onChange, options, className = "" }) => (
+const ClaySelect: React.FC<ClaySelectProps> = ({ value, onChange, options, className = "" }) => (
   <div className={`relative group ${className}`}>
     <select 
-      className={`w-full px-5 py-4 font-extrabold text-[#2D3142] appearance-none cursor-pointer ${clayInput}`}
+      className={`w-full px-5 py-4 font-extrabold ${clayText} appearance-none cursor-pointer ${clayInput}`}
       value={value} 
       onChange={onChange}
     >
@@ -100,7 +103,7 @@ const StyledSelect: React.FC<StyledSelectProps> = ({ value, onChange, options, c
       })}
     </select>
     <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
-      <ChevronDown className="h-6 w-6 text-[#7B61FF]" />
+      <ChevronDown className={`h-6 w-6 ${clayAccent}`} />
     </div>
   </div>
 );
@@ -127,6 +130,7 @@ export default function ElectricityCalculator({
   const [compStateB, setCompStateB] = useState('Delhi');
   const [natAvgState, setNatAvgState] = useState('Maharashtra');
   const [lookupState, setLookupState] = useState('Maharashtra');
+  const [tableState, setTableState] = useState('Maharashtra');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   useEffect(() => {
@@ -184,28 +188,28 @@ export default function ElectricityCalculator({
   const compB500 = calculateEngine(500, safeData[compStateB]?.Domestic || fallbackTariff).finalTotal;
 
   return (
-    <div className="min-h-screen bg-[#EAEFF5] font-sans text-[#2D3142] selection:bg-[#7B61FF] selection:text-white pb-20 overflow-x-hidden">
+    <div className={`min-h-screen ${clayBg} font-sans ${clayText} selection:bg-[#7B61FF] selection:text-white pb-20 overflow-x-hidden`}>
 
       {/* CLAY HEADER */}
       <header className="sticky top-4 z-50 px-4 sm:px-6 max-w-7xl mx-auto">
-        <div className={`h-20 px-6 sm:px-8 flex items-center justify-between ${clayPanel}`}>
+        <div className={`h-20 px-6 sm:px-8 flex items-center justify-between ${clayCard} !rounded-[2rem]`}>
           <Link href="/" className="flex items-center gap-4 cursor-pointer group">
-            <div className="bg-[#7B61FF] p-2.5 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-[4px_4px_10px_rgba(123,97,255,0.4),inset_-2px_-2px_4px_rgba(0,0,0,0.2),inset_2px_2px_4px_rgba(255,255,255,0.4)]">
+            <div className={`${clayBtn} p-2.5 !shadow-none !rounded-[1rem]`}>
               <Zap className="h-6 w-6 text-white fill-white" />
             </div>
-            <span className="font-extrabold text-2xl tracking-tight text-[#2D3142]">Vidyut<span className="text-[#7B61FF]">Calc</span></span>
+            <span className="font-extrabold text-2xl tracking-tight">Vidyut<span className={clayAccent}>Calc</span></span>
           </Link>
-          <nav className="hidden md:flex gap-8 font-extrabold text-[15px] text-[#8E92A4]">
-            <a href="#calculator" className="hover:text-[#7B61FF] transition-colors duration-300">Calculator</a>
-            <a href="#compare" className="hover:text-[#7B61FF] transition-colors duration-300">Dashboard</a>
-            <a href="#lookup" className="hover:text-[#7B61FF] transition-colors duration-300">Tariffs</a>
+          <nav className="hidden md:flex gap-8 font-extrabold text-[15px] text-gray-500">
+            <a href="#calculator" className={`hover:${clayAccent} transition-colors duration-300`}>Calculator</a>
+            <a href="#compare" className={`hover:${clayAccent} transition-colors duration-300`}>Dashboard</a>
+            <a href="#lookup" className={`hover:${clayAccent} transition-colors duration-300`}>Tariffs</a>
           </nav>
           <button className={`md:hidden p-3 ${clayBtnSecondary}`} onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
         {isMenuOpen && (
-          <div className={`md:hidden mt-4 px-6 py-6 space-y-4 font-extrabold text-[#2D3142] w-full z-40 ${clayPanel}`}>
+          <div className={`md:hidden mt-4 px-6 py-6 space-y-4 font-extrabold w-full z-40 ${clayCard}`}>
             <a href="#calculator" onClick={()=>setIsMenuOpen(false)} className={`block px-4 py-4 text-center ${clayBtnSecondary}`}>Calculator</a>
             <a href="#compare" onClick={()=>setIsMenuOpen(false)} className={`block px-4 py-4 text-center ${clayBtnSecondary}`}>Dashboard</a>
             <a href="#lookup" onClick={()=>setIsMenuOpen(false)} className={`block px-4 py-4 text-center ${clayBtnSecondary}`}>Tariff Lookup</a>
@@ -215,69 +219,68 @@ export default function ElectricityCalculator({
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 space-y-12 mt-12">
 
-        <div className="flex items-center justify-between mb-2 px-2">
+        <div className="flex items-center justify-between mb-4 px-2">
            <div>
-             <h1 className="text-4xl font-black text-[#2D3142]">Hello! 👋</h1>
-             <p className="text-[#8E92A4] font-bold text-lg mt-2">Let's calculate your electricity bill.</p>
+             <h1 className="text-4xl font-black">Hello! 👋</h1>
+             <p className="text-gray-500 font-bold text-lg mt-2">Let's calculate your electricity bill.</p>
            </div>
            <div className={`${clayIcon} relative h-16 w-16`}>
-             <Settings className="h-7 w-7 text-[#A0A3B1] animate-spin-slow" />
+             <Settings className="h-7 w-7 text-gray-400 animate-spin-slow" />
              <div className="absolute top-2 right-2 h-3.5 w-3.5 bg-[#FF6188] rounded-full shadow-[inset_1px_1px_2px_rgba(255,255,255,0.8),2px_2px_4px_rgba(255,97,136,0.4)]"></div>
            </div>
         </div>
 
-        {/* CLAY RESULTS CARD (Popping Purple) */}
+        {/* CLAY RESULTS CARD */}
         {billResult && (
-          <div className={`bg-[#7B61FF] rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-[15px_15px_35px_rgba(123,97,255,0.4),inset_-5px_-5px_15px_rgba(0,0,0,0.1),inset_5px_5px_15px_rgba(255,255,255,0.25)] animate-in fade-in zoom-in duration-500`}>
-             {/* Decorative Clay Bubbles */}
-             <div className="absolute -top-16 -right-16 w-52 h-52 bg-white/10 rounded-full shadow-[inset_4px_4px_10px_rgba(255,255,255,0.3)]"></div>
+          <div className={`${clayCardPrimary} p-10 relative overflow-hidden animate-in fade-in zoom-in duration-500`}>
+             {/* Decorative Bubbles */}
+             <div className="absolute -top-16 -right-16 w-52 h-52 bg-white/20 rounded-full shadow-[inset_4px_4px_10px_rgba(255,255,255,0.4)]"></div>
              <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-black/10 rounded-full shadow-[inset_-4px_-4px_10px_rgba(0,0,0,0.2)]"></div>
              
              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 gap-8">
                <div>
-                 <p className="text-white/80 font-bold text-lg mb-2">Estimated Total Bill</p>
+                 <p className="text-white/90 font-bold text-lg mb-2">Estimated Total Bill</p>
                  <h2 className="text-6xl sm:text-7xl font-black tracking-tighter mb-6 drop-shadow-md">₹{billResult.finalTotal.toFixed(2)}</h2>
-                 <button onClick={() => window.scrollTo({top: document.getElementById('breakdown')?.offsetTop, behavior: 'smooth'})} className={`${clayBtnSecondary} px-8 py-4 text-[#7B61FF]`}>
+                 <button onClick={() => window.scrollTo({top: document.getElementById('breakdown')?.offsetTop, behavior: 'smooth'})} className={`${clayBtnSecondary} px-8 py-3 !shadow-[6px_6px_12px_rgba(0,0,0,0.2),inset_2px_2px_4px_#ffffff]`}>
                    View Breakdown
                  </button>
                </div>
                
-               {/* 3D Circular Progress */}
-               <div className="relative w-36 h-36 flex items-center justify-center shrink-0 bg-[#6852D9] rounded-full shadow-[inset_6px_6px_12px_rgba(0,0,0,0.2),inset_-6px_-6px_12px_rgba(255,255,255,0.1)]">
-                  <svg className="absolute w-[120%] h-[120%] transform -rotate-90 drop-shadow-[2px_4px_6px_rgba(0,0,0,0.2)]" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="white" strokeWidth="8" strokeDasharray="251.2" strokeDashoffset="60" strokeLinecap="round" />
+               <div className="relative w-36 h-36 flex items-center justify-center shrink-0 bg-[#6852D9] rounded-full shadow-[inset_6px_6px_12px_rgba(0,0,0,0.2),inset_-6px_-6px_12px_rgba(255,255,255,0.1)] border-4 border-[#8C76FF]">
+                  <svg className="absolute w-full h-full transform -rotate-90 drop-shadow-md" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="white" strokeWidth="6" strokeDasharray="251.2" strokeDashoffset="60" strokeLinecap="round" />
                   </svg>
-                  <div className="absolute flex flex-col items-center justify-center bg-[#7B61FF] w-28 h-28 rounded-full shadow-[8px_8px_16px_rgba(0,0,0,0.2),inset_-2px_-2px_6px_rgba(0,0,0,0.1),inset_2px_2px_6px_rgba(255,255,255,0.2)]">
-                    <span className="font-black text-2xl">{billResult.consumed}</span>
-                    <span className="text-sm text-white/80 font-bold">Units</span>
+                  <div className="absolute flex flex-col items-center justify-center">
+                    <span className="font-black text-3xl">{billResult.consumed}</span>
+                    <span className="text-sm text-white/90 font-bold">Units</span>
                   </div>
                </div>
              </div>
           </div>
         )}
 
-        {/* INPUT FORM (White Clay) */}
-        <section id="calculator" className={`${clayPanel} p-8 sm:p-10`}>
+        {/* INPUT FORM (Clay Panel) */}
+        <section id="calculator" className={`${clayCard} p-8 sm:p-10`}>
           <div className="flex items-center justify-between mb-8">
-            <h3 className="font-black text-2xl text-[#2D3142]">Bill Parameters</h3>
-            <span className="bg-[#EAF2FF] text-[#4A90E2] text-sm font-extrabold px-4 py-2 rounded-[1rem] shadow-[inset_2px_2px_4px_rgba(255,255,255,0.8),inset_-2px_-2px_4px_rgba(0,0,0,0.05)]">Active</span>
+            <h3 className="font-black text-2xl">Bill Parameters</h3>
+            <span className={`bg-white ${clayAccent} text-sm font-extrabold px-4 py-2 rounded-xl shadow-[inset_2px_2px_4px_#ced4da,inset_-2px_-2px_4px_#ffffff]`}>Active</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
             <div>
-              <label className="block text-sm font-extrabold text-[#8E92A4] mb-3 ml-2">State / UT</label>
-              <StyledSelect value={state} onChange={(e) => setState(e.target.value)} options={statesList} />
+              <label className="block text-sm font-extrabold text-gray-500 mb-3 ml-2">State / UT</label>
+              <ClaySelect value={state} onChange={(e) => setState(e.target.value)} options={statesList} />
             </div>
             <div>
-              <label className="block text-sm font-extrabold text-[#8E92A4] mb-3 ml-2">Connection</label>
-              <StyledSelect 
+              <label className="block text-sm font-extrabold text-gray-500 mb-3 ml-2">Connection</label>
+              <ClaySelect 
                 value={connType} 
                 onChange={(e) => setConnType(e.target.value)} 
                 options={[{val: 'Domestic', label: '🏠 Domestic'}, {val: 'Commercial', label: '🏢 Commercial'}]} 
               />
             </div>
             <div>
-              <label className="block text-sm font-extrabold text-[#8E92A4] mb-3 ml-2">Units Consumed</label>
+              <label className="block text-sm font-extrabold text-gray-500 mb-3 ml-2">Units Consumed</label>
               <input 
                 type="number" placeholder="e.g. 250" value={units} onChange={(e) => setUnits(e.target.value)} 
                 className={`w-full px-5 py-4 font-black text-xl ${clayInput}`} 
@@ -286,70 +289,70 @@ export default function ElectricityCalculator({
           </div>
 
           <div className={`mb-10 rounded-[2rem] overflow-hidden ${clayInput} p-2`}>
-            <div className="bg-[#EAEFF5] px-6 py-4 flex justify-between items-center rounded-[1.5rem] shadow-[3px_3px_6px_#D6D9E6,inset_-2px_-2px_4px_#FFFFFF,inset_2px_2px_4px_rgba(255,255,255,0.5)]">
-              <span className="text-sm font-extrabold text-[#2D3142] flex items-center gap-3"><div className={clayIcon}><Settings className="h-4 w-4 text-[#7B61FF]" /></div> Active Rates ({state})</span>
-              <button onClick={() => setIsEditing(!isEditing)} className={`${clayBtnSecondary} px-4 py-2 text-sm`}>{isEditing ? 'Save Rates' : 'Edit Rates'}</button>
+            <div className={`${clayIcon} !rounded-[1.5rem] !shadow-none !border-none flex justify-between items-center mb-4`}>
+              <span className="text-sm font-extrabold flex items-center gap-3"><Zap className="h-5 w-5 text-[#FFD166] fill-[#FFD166]" /> Active Rates ({state})</span>
+              <button onClick={() => setIsEditing(!isEditing)} className={`${clayBtnSecondary} px-5 py-2 text-sm`}>{isEditing ? 'Save' : 'Edit'}</button>
             </div>
             
-            <div className="p-6">
+            <div className="px-4 pb-4">
               {!isEditing ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 text-sm">
-                  <div className={`${clayPanel} shadow-none bg-white/50 p-5 rounded-[1.5rem]`}>
-                    <p className="text-[#8E92A4] font-black mb-4 text-xs uppercase tracking-widest flex items-center gap-2"><Zap className="h-4 w-4 text-[#FFD166]"/> Energy Slabs</p>
-                    <ul className="space-y-3 text-[#2D3142] font-bold">
+                  <div className={`${clayCard} !shadow-none bg-white/40 p-5 !rounded-[1.5rem]`}>
+                    <p className="text-gray-500 font-black mb-4 text-xs uppercase tracking-widest flex items-center gap-2">Energy Slabs</p>
+                    <ul className="space-y-3 font-bold">
                       {tariff.slabs.map((s: any, i: number) => (
-                        <li key={i} className="flex justify-between border-b border-dashed border-[#D6D9E6] pb-2"><span>Up to {s.max === Infinity ? 'Above' : s.max} units</span><span className="text-lg">₹{s.rate.toFixed(2)}</span></li>
+                        <li key={i} className="flex justify-between border-b border-dashed border-gray-300 pb-2"><span>Up to {s.max === Infinity ? 'Above' : s.max}</span><span className="text-lg">₹{s.rate.toFixed(2)}</span></li>
                       ))}
                     </ul>
                   </div>
-                  <div className={`${clayPanel} shadow-none bg-white/50 p-5 rounded-[1.5rem]`}>
-                    <p className="text-[#8E92A4] font-black mb-4 text-xs uppercase tracking-widest flex items-center gap-2"><DollarSign className="h-4 w-4 text-[#26C6DA]"/> Other Charges</p>
-                    <ul className="space-y-3 text-[#2D3142] font-bold">
-                      <li className="flex justify-between border-b border-dashed border-[#D6D9E6] pb-2"><span>Fixed Charge</span><span className="text-lg">₹{tariff.fixedCharge}</span></li>
-                      <li className="flex justify-between border-b border-dashed border-[#D6D9E6] pb-2"><span>Duty Tax</span><span className="text-lg">{tariff.dutyPercent}%</span></li>
-                      <li className="flex justify-between border-b border-dashed border-[#D6D9E6] pb-2"><span>FPPCA / Unit</span><span className="text-lg">₹{tariff.fac}</span></li>
+                  <div className={`${clayCard} !shadow-none bg-white/40 p-5 !rounded-[1.5rem]`}>
+                    <p className="text-gray-500 font-black mb-4 text-xs uppercase tracking-widest flex items-center gap-2">Other Charges</p>
+                    <ul className="space-y-3 font-bold">
+                      <li className="flex justify-between border-b border-dashed border-gray-300 pb-2"><span>Fixed Charge</span><span className="text-lg">₹{tariff.fixedCharge}</span></li>
+                      <li className="flex justify-between border-b border-dashed border-gray-300 pb-2"><span>Duty Tax</span><span className="text-lg">{tariff.dutyPercent}%</span></li>
+                      <li className="flex justify-between border-b border-dashed border-gray-300 pb-2"><span>FPPCA / Unit</span><span className="text-lg">₹{tariff.fac}</span></li>
                     </ul>
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/50 p-5 rounded-[1.5rem]">
-                   <div><label className="block text-xs font-black text-[#8E92A4] mb-2">Fixed (₹)</label><input type="number" value={tariff.fixedCharge} onChange={(e) => handleTariffChange(e, 'fixedCharge')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
-                   <div><label className="block text-xs font-black text-[#8E92A4] mb-2">Rent (₹)</label><input type="number" value={tariff.meterRent} onChange={(e) => handleTariffChange(e, 'meterRent')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
-                   <div><label className="block text-xs font-black text-[#8E92A4] mb-2">Duty (%)</label><input type="number" value={tariff.dutyPercent} onChange={(e) => handleTariffChange(e, 'dutyPercent')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
-                   <div><label className="block text-xs font-black text-[#8E92A4] mb-2">FAC (₹)</label><input type="number" value={tariff.fac} onChange={(e) => handleTariffChange(e, 'fac')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/40 p-5 rounded-[1.5rem]">
+                   <div><label className="block text-xs font-black text-gray-500 mb-2">Fixed (₹)</label><input type="number" value={tariff.fixedCharge} onChange={(e) => handleTariffChange(e, 'fixedCharge')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
+                   <div><label className="block text-xs font-black text-gray-500 mb-2">Rent (₹)</label><input type="number" value={tariff.meterRent} onChange={(e) => handleTariffChange(e, 'meterRent')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
+                   <div><label className="block text-xs font-black text-gray-500 mb-2">Duty (%)</label><input type="number" value={tariff.dutyPercent} onChange={(e) => handleTariffChange(e, 'dutyPercent')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
+                   <div><label className="block text-xs font-black text-gray-500 mb-2">FAC (₹)</label><input type="number" value={tariff.fac} onChange={(e) => handleTariffChange(e, 'fac')} className={`w-full p-3 font-bold ${clayInput}`} /></div>
                 </div>
               )}
             </div>
           </div>
 
-          <button onClick={calculateBill} className={`w-full py-6 text-xl flex justify-center items-center gap-3 ${clayBtnPrimary}`}>
+          <button onClick={calculateBill} className={`w-full py-6 text-xl flex justify-center items-center gap-3 ${clayBtn}`}>
              Calculate Bill <ArrowRight className="h-6 w-6" />
           </button>
         </section>
 
-        {/* DETAILED BREAKDOWN (Shows after calculation) */}
+        {/* DETAILED BREAKDOWN */}
         {billResult && (
-          <div id="breakdown" className={`${clayPanel} p-8 sm:p-10 animate-in slide-in-from-bottom-4`}>
-             <h3 className="font-black text-2xl mb-8 text-[#2D3142]">Detailed Breakdown</h3>
+          <div id="breakdown" className={`${clayCard} p-8 sm:p-10 animate-in slide-in-from-bottom-4`}>
+             <h3 className="font-black text-2xl mb-8">Detailed Breakdown</h3>
              
              <div className="space-y-6">
-               <div className={`p-6 bg-[#EAEFF5] rounded-[2rem] shadow-[inset_4px_4px_10px_#D6D9E6,inset_-4px_-4px_10px_#FFFFFF]`}>
-                 <div className="flex justify-between font-black text-[#2D3142] mb-5 text-xl border-b-2 border-[#D6D9E6] pb-4">
-                   <span className="flex items-center gap-3"><div className={clayIcon}><Zap className="h-5 w-5 text-[#FFD166] fill-[#FFD166]"/></div> Energy Charges</span><span className="text-[#7B61FF] text-2xl">₹{billResult.totalEnergyCharge.toFixed(2)}</span>
+               <div className={`p-6 ${clayInput} !shadow-[inset_3px_3px_6px_#ced4da,inset_-3px_-3px_6px_#ffffff] !rounded-[2rem]`}>
+                 <div className="flex justify-between font-black mb-5 text-xl border-b-2 border-gray-200 pb-4">
+                   <span className="flex items-center gap-3"><div className={clayIcon}><Zap className="h-5 w-5 text-[#FFD166] fill-[#FFD166]"/></div> Energy Charges</span><span className={clayAccent}>₹{billResult.totalEnergyCharge.toFixed(2)}</span>
                  </div>
                  {billResult.slabBreakdown.map((b, i) => (
-                   <div key={i} className="flex justify-between text-[#8E92A4] pl-2 mb-3 text-base font-bold">
+                   <div key={i} className="flex justify-between text-gray-600 pl-2 mb-3 text-base font-bold">
                      <span>{b.units} units × ₹{b.rate} <span className="text-xs bg-white px-2 py-1 rounded-lg shadow-sm ml-2">{b.range} slab</span></span>
                      <span className="font-black text-[#2D3142]">₹{b.cost.toFixed(2)}</span>
                    </div>
                  ))}
                </div>
 
-               <div className={`p-6 bg-[#EAEFF5] rounded-[2rem] shadow-[inset_4px_4px_10px_#D6D9E6,inset_-4px_-4px_10px_#FFFFFF] space-y-4 text-base`}>
-                 <div className="flex justify-between font-extrabold text-[#8E92A4]"><span>Fixed Charges</span><span className="font-black text-[#2D3142]">₹{billResult.fixedCharge.toFixed(2)}</span></div>
-                 {billResult.meterRent > 0 && <div className="flex justify-between font-extrabold text-[#8E92A4]"><span>Meter Rent</span><span className="font-black text-[#2D3142]">₹{billResult.meterRent.toFixed(2)}</span></div>}
-                 <div className="flex justify-between font-extrabold text-[#8E92A4]"><span>FPPCA / Surcharge</span><span className="font-black text-[#2D3142]">₹{billResult.facTotal.toFixed(2)}</span></div>
-                 <div className="flex justify-between font-extrabold text-[#8E92A4]"><span>Electricity Duty</span><span className="font-black text-[#2D3142]">₹{billResult.dutyTotal.toFixed(2)}</span></div>
+               <div className={`p-6 ${clayInput} !shadow-[inset_3px_3px_6px_#ced4da,inset_-3px_-3px_6px_#ffffff] !rounded-[2rem] space-y-4 text-base`}>
+                 <div className="flex justify-between font-extrabold text-gray-500"><span>Fixed Charges</span><span className="font-black text-[#2D3142]">₹{billResult.fixedCharge.toFixed(2)}</span></div>
+                 {billResult.meterRent > 0 && <div className="flex justify-between font-extrabold text-gray-500"><span>Meter Rent</span><span className="font-black text-[#2D3142]">₹{billResult.meterRent.toFixed(2)}</span></div>}
+                 <div className="flex justify-between font-extrabold text-gray-500"><span>FPPCA / Surcharge</span><span className="font-black text-[#2D3142]">₹{billResult.facTotal.toFixed(2)}</span></div>
+                 <div className="flex justify-between font-extrabold text-gray-500"><span>Electricity Duty</span><span className="font-black text-[#2D3142]">₹{billResult.dutyTotal.toFixed(2)}</span></div>
                </div>
              </div>
           </div>
@@ -357,69 +360,68 @@ export default function ElectricityCalculator({
 
         {/* DASHBOARD SECTION */}
         <div className="pt-8">
-          <h2 className="text-3xl font-black text-[#2D3142] mb-8 flex items-center">Dashboard <span className="bg-[#F0E6FF] text-[#7B61FF] text-base font-black px-4 py-1 rounded-xl shadow-[inset_2px_2px_4px_#FFFFFF,inset_-2px_-2px_4px_rgba(123,97,255,0.2)] ml-4">2 Widgets</span></h2>
+          <h2 className="text-3xl font-black mb-8 flex items-center">Dashboard <span className={`text-sm ${clayBtnSecondary} px-3 py-1 ml-4`}>Visuals</span></h2>
           
           <section id="compare" className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             
-            {/* Soft Blue Clay Card */}
-            <article className={`p-8 bg-[#EAF2FF] rounded-[2.5rem] shadow-[12px_12px_24px_#D6D9E6,inset_-4px_-4px_10px_rgba(74,144,226,0.1),inset_4px_4px_10px_rgba(255,255,255,0.8)]`}>
+            <article className={`${clayCard} p-8`}>
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <p className="text-[#4A90E2] font-black text-xs uppercase tracking-widest mb-2">Comparison</p>
-                  <h3 className="font-black text-[#2D3142] text-2xl leading-tight">State vs State<br/>Matchup</h3>
+                  <p className="text-gray-400 font-black text-xs uppercase tracking-widest mb-2">Comparison</p>
+                  <h3 className="font-black text-2xl leading-tight">State vs State<br/>Matchup</h3>
                 </div>
-                <div className={`${clayIcon} bg-[#EAF2FF] shadow-[4px_4px_8px_#D0DEED,inset_-2px_-2px_4px_rgba(255,255,255,0.5),inset_2px_2px_4px_#FFFFFF]`}>
-                  <Scale className="h-6 w-6 text-[#4A90E2]" />
+                <div className={`${clayIcon} !rounded-[1rem]`}>
+                  <Scale className={`h-6 w-6 ${clayAccent}`} />
                 </div>
               </div>
               
               <div className="flex gap-4 mb-8">
-                <StyledSelect className="w-1/2" value={compStateA} onChange={(e)=>setCompStateA(e.target.value)} options={statesList} />
-                <StyledSelect className="w-1/2" value={compStateB} onChange={(e)=>setCompStateB(e.target.value)} options={statesList} />
+                <ClaySelect className="w-1/2" value={compStateA} onChange={(e)=>setCompStateA(e.target.value)} options={statesList} />
+                <ClaySelect className="w-1/2" value={compStateB} onChange={(e)=>setCompStateB(e.target.value)} options={statesList} />
               </div>
 
               <div className="space-y-6">
                 <div>
-                  <div className="flex justify-between text-base font-black text-[#2D3142] mb-2"><span className="truncate pr-2">{compStateA}</span><span>₹{Math.round(compA500)}</span></div>
-                  <div className="w-full bg-[#D0DEED] rounded-full h-4 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1),inset_-2px_-2px_4px_#FFFFFF]">
-                    <div className="bg-[#4A90E2] h-4 rounded-full transition-all duration-1000 shadow-[inset_-2px_-2px_4px_rgba(0,0,0,0.2),inset_2px_2px_4px_rgba(255,255,255,0.4)]" style={{ width: `${Math.min((compA500 / Math.max(compA500, compB500)) * 100, 100)}%` }}></div>
+                  <div className="flex justify-between text-base font-black mb-2"><span className="truncate pr-2">{compStateA}</span><span>₹{Math.round(compA500)}</span></div>
+                  <div className={`w-full h-4 ${clayInput}`}>
+                    <div className={`${clayBtn} h-full !rounded-full !shadow-none`} style={{ width: `${Math.min((compA500 / Math.max(compA500, compB500)) * 100, 100)}%` }}></div>
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-base font-black text-[#2D3142] mb-2"><span className="truncate pr-2">{compStateB}</span><span>₹{Math.round(compB500)}</span></div>
-                  <div className="w-full bg-[#D0DEED] rounded-full h-4 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1),inset_-2px_-2px_4px_#FFFFFF]">
-                    <div className="bg-[#A0A3B1] h-4 rounded-full transition-all duration-1000 shadow-[inset_-2px_-2px_4px_rgba(0,0,0,0.2),inset_2px_2px_4px_rgba(255,255,255,0.4)]" style={{ width: `${Math.min((compB500 / Math.max(compA500, compB500)) * 100, 100)}%` }}></div>
+                  <div className="flex justify-between text-base font-black mb-2"><span className="truncate pr-2">{compStateB}</span><span>₹{Math.round(compB500)}</span></div>
+                  <div className={`w-full h-4 ${clayInput}`}>
+                    <div className="bg-gray-400 h-full rounded-full" style={{ width: `${Math.min((compB500 / Math.max(compA500, compB500)) * 100, 100)}%` }}></div>
                   </div>
                 </div>
               </div>
             </article>
 
-            {/* Soft Peach Clay Card */}
-            <article className={`p-8 bg-[#FFEFE5] rounded-[2.5rem] shadow-[12px_12px_24px_#D6D9E6,inset_-4px_-4px_10px_rgba(255,115,73,0.08),inset_4px_4px_10px_rgba(255,255,255,0.8)]`}>
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <p className="text-[#FF7349] font-black text-xs uppercase tracking-widest mb-2">Metrics</p>
-                  <h3 className="font-black text-[#2D3142] text-2xl leading-tight">National<br/>Average</h3>
+            <article className={`${clayCard} p-8 flex flex-col justify-between`}>
+              <div>
+                <div className="flex justify-between items-start mb-8">
+                  <div>
+                    <p className="text-gray-400 font-black text-xs uppercase tracking-widest mb-2">Metrics</p>
+                    <h3 className="font-black text-2xl leading-tight">National<br/>Average</h3>
+                  </div>
+                  <div className={`${clayIcon} !rounded-[1rem]`}>
+                    <BarChart3 className={`h-6 w-6 ${clayAccent}`} />
+                  </div>
                 </div>
-                <div className={`${clayIcon} bg-[#FFEFE5] shadow-[4px_4px_8px_#EEDDCA,inset_-2px_-2px_4px_rgba(255,255,255,0.5),inset_2px_2px_4px_#FFFFFF]`}>
-                  <BarChart3 className="h-6 w-6 text-[#FF7349]" />
+                <div className="mb-10">
+                  <ClaySelect value={natAvgState} onChange={(e)=>setNatAvgState(e.target.value)} options={statesList} />
                 </div>
               </div>
 
-              <div className="mb-10">
-                <StyledSelect value={natAvgState} onChange={(e)=>setNatAvgState(e.target.value)} options={statesList} />
-              </div>
-
-              <div className="flex items-end justify-around gap-6 h-32">
+              <div className={`flex items-end justify-around gap-6 h-40 ${clayInput} p-4 !rounded-[2rem]`}>
                 <div className="w-1/2 flex flex-col items-center justify-end gap-3 h-full">
-                  <span className="font-black text-2xl text-[#2D3142]">₹{Math.round(selectedNatAvgState500)}</span>
-                  <div className="w-16 bg-[#FF7349] rounded-[1rem] rounded-b-none transition-all duration-1000 shadow-[inset_-2px_0px_6px_rgba(0,0,0,0.2),inset_2px_2px_6px_rgba(255,255,255,0.3)]" style={{ height: `${Math.min((selectedNatAvgState500 / 5000) * 100, 100)}%` }}></div>
-                  <span className="text-xs font-black text-[#8E92A4] text-center bg-white px-3 py-1 rounded-lg shadow-sm truncate w-full">{natAvgState}</span>
+                  <span className="font-black text-xl">₹{Math.round(selectedNatAvgState500)}</span>
+                  <div className={`${clayBtn} w-16 !shadow-none !rounded-b-none`} style={{ height: `${Math.min((selectedNatAvgState500 / 5000) * 100, 100)}%` }}></div>
+                  <span className="text-xs font-black text-gray-500 bg-white px-3 py-1 rounded-lg shadow-sm truncate w-full text-center">{natAvgState}</span>
                 </div>
                 <div className="w-1/2 flex flex-col items-center justify-end gap-3 h-full">
-                  <span className="font-black text-2xl text-[#2D3142]">₹{Math.round(nationalAvg500)}</span>
-                  <div className="w-16 bg-[#A0A3B1] rounded-[1rem] rounded-b-none transition-all duration-1000 shadow-[inset_-2px_0px_6px_rgba(0,0,0,0.2),inset_2px_2px_6px_rgba(255,255,255,0.3)]" style={{ height: `${(nationalAvg500 / 5000) * 100}%` }}></div>
-                  <span className="text-xs font-black text-[#8E92A4] text-center bg-white px-3 py-1 rounded-lg shadow-sm">Nat Avg</span>
+                  <span className="font-black text-xl">₹{Math.round(nationalAvg500)}</span>
+                  <div className="bg-gray-400 w-16 rounded-[1.5rem] rounded-b-none" style={{ height: `${(nationalAvg500 / 5000) * 100}%` }}></div>
+                  <span className="text-xs font-black text-gray-500 bg-white px-3 py-1 rounded-lg shadow-sm">Nat Avg</span>
                 </div>
               </div>
             </article>
@@ -431,92 +433,83 @@ export default function ElectricityCalculator({
 
         {/* TARIFF LIST SECTION */}
         <div className="pt-8">
-          <h2 className="text-3xl font-black text-[#2D3142] mb-8 flex items-center">Tariff Lookup <span className="bg-[#EAF2FF] text-[#4A90E2] text-base font-black px-4 py-1 rounded-xl shadow-[inset_2px_2px_4px_#FFFFFF,inset_-2px_-2px_4px_rgba(74,144,226,0.15)] ml-4">Select State</span></h2>
+          <h2 className="text-3xl font-black mb-8 flex items-center">Tariff Lookup <span className={`text-sm ${clayBtnSecondary} px-3 py-1 ml-4`}>Table</span></h2>
           
           <div className="space-y-8">
-            
-            {/* Clay Pill Container */}
-            <div className={`${clayPanel} p-8`}>
+            <article className={`${clayCard} p-8`}>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
-                <div className="flex items-center gap-5 w-full sm:w-auto">
-                  <div className={`${clayIcon} h-16 w-16 shrink-0`}>
-                    <Home className="h-8 w-8 text-[#FF6188]" />
-                  </div>
+                <div className="flex items-center gap-5">
+                  <div className={`${clayIcon} h-16 w-16`}><TableProperties className={`h-8 w-8 ${clayAccent}`} /></div>
                   <div>
-                    <h4 className="font-black text-[#2D3142] text-2xl">Domestic Slabs</h4>
-                    <p className="text-[#8E92A4] font-extrabold text-sm">Select state below to view</p>
+                    <h4 className="font-black text-2xl">Rate Comparison</h4>
+                    <p className="text-gray-500 font-bold text-sm">Domestic vs Commercial base parameters</p>
                   </div>
                 </div>
-                
                 <div className="w-full sm:w-72 shrink-0">
-                   <StyledSelect value={lookupState} onChange={(e)=>setLookupState(e.target.value)} options={statesList} />
+                   <ClaySelect value={tableState} onChange={(e)=>setTableState(e.target.value)} options={statesList} />
                 </div>
               </div>
-
-              <div className={`p-6 ${clayInput}`}>
-                <ul className="space-y-4 text-base text-[#8E92A4] font-bold">
-                  {tariffData[lookupState]?.Domestic?.slabs?.map((s, i) => (
-                    <li key={i} className="flex justify-between border-b border-dashed border-[#D6D9E6] pb-3">
-                      <span>Up to {s.max === Infinity ? 'Above' : s.max} units</span><span className="font-black text-xl text-[#2D3142]">₹{s.rate.toFixed(2)}</span>
-                    </li>
-                  ))}
-                </ul>
+              
+              <div className={`${clayInput} overflow-hidden p-2`}>
+                <table className="w-full text-left text-sm md:text-base">
+                  <thead className={`${clayIcon} !shadow-none !border-none !rounded-[1rem]`}>
+                    <tr>
+                      <th className="p-5 font-black text-gray-500">Charge Type</th>
+                      <th className={`p-5 font-black ${clayAccent}`}>Domestic</th>
+                      <th className={`p-5 font-black ${clayAccent}`}>Commercial</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-bold">
+                    <tr className="border-b border-dashed border-gray-300">
+                      <td className="p-5 text-gray-600">Fixed Charge</td>
+                      <td className="p-5 text-xl">₹{tariffData[tableState]?.Domestic?.fixedCharge || 0}</td>
+                      <td className="p-5 text-xl">₹{tariffData[tableState]?.Commercial?.fixedCharge || 0}</td>
+                    </tr>
+                    <tr className="border-b border-dashed border-gray-300">
+                      <td className="p-5 text-gray-600">Meter Rent</td>
+                      <td className="p-5 text-xl">₹{tariffData[tableState]?.Domestic?.meterRent || 0}</td>
+                      <td className="p-5 text-xl">₹{tariffData[tableState]?.Commercial?.meterRent || 0}</td>
+                    </tr>
+                    <tr className="border-b border-dashed border-gray-300">
+                      <td className="p-5 text-gray-600">Electricity Duty</td>
+                      <td className="p-5 text-xl">{tariffData[tableState]?.Domestic?.dutyPercent || 0}%</td>
+                      <td className="p-5 text-xl">{tariffData[tableState]?.Commercial?.dutyPercent || 0}%</td>
+                    </tr>
+                    <tr>
+                      <td className="p-5 text-gray-600">FPPCA (per unit)</td>
+                      <td className="p-5 text-xl">₹{tariffData[tableState]?.Domestic?.fac?.toFixed(2) || '0.00'}</td>
+                      <td className="p-5 text-xl">₹{tariffData[tableState]?.Commercial?.fac?.toFixed(2) || '0.00'}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
-            </div>
-
-            {/* Clay Pill Container 2 */}
-            <div className={`${clayPanel} p-8`}>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
-                <div className="flex items-center gap-5 w-full sm:w-auto">
-                  <div className={`${clayIcon} h-16 w-16 shrink-0`}>
-                    <Building2 className="h-8 w-8 text-[#26C6DA]" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-[#2D3142] text-2xl">Commercial Slabs</h4>
-                    <p className="text-[#8E92A4] font-extrabold text-sm">Higher rates for cross-subsidization</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className={`p-6 ${clayInput}`}>
-                <ul className="space-y-4 text-base text-[#8E92A4] font-bold">
-                  {tariffData[lookupState]?.Commercial?.slabs?.map((s, i) => (
-                    <li key={i} className="flex justify-between border-b border-dashed border-[#D6D9E6] pb-3">
-                      <span>Up to {s.max === Infinity ? 'Above' : s.max} units</span><span className="font-black text-xl text-[#2D3142]">₹{s.rate.toFixed(2)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
+            </article>
           </div>
         </div>
 
-        {/* FAQs (Clay Bubbles) */}
+        {/* FAQs */}
         <div className="pt-12">
-          <h2 className="text-3xl font-black text-[#2D3142] mb-8 flex items-center">Learning <span className="bg-[#FFF0E7] text-[#FF7349] text-base font-black px-4 py-1 rounded-xl shadow-[inset_2px_2px_4px_#FFFFFF,inset_-2px_-2px_4px_rgba(255,115,73,0.15)] ml-4">Tips</span></h2>
+          <h2 className="text-3xl font-black mb-8 flex items-center">Learning <span className={`text-sm ${clayBtnSecondary} px-3 py-1 ml-4`}>Tips</span></h2>
           
           <div className="space-y-6">
             {faqs.slice(0, 6).map((faq, idx) => (
-              <article key={idx} className={`${clayPanel} p-2 overflow-hidden transition-all duration-300`}>
+              <article key={idx} className={`${clayCard} p-2 overflow-hidden transition-all duration-300`}>
                 <button 
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)} 
-                  className="w-full p-5 flex justify-between items-center text-left bg-white rounded-[2rem] hover:bg-[#FAFAFD] transition-colors"
+                  className="w-full p-5 flex justify-between items-center text-left bg-white/40 rounded-[2rem] hover:bg-white/60 transition-colors"
                 >
                   <div className="flex items-center gap-5">
                     <div className={`${clayIcon} shrink-0 h-14 w-14`}>
-                      <Lightbulb className={`h-6 w-6 transition-colors ${openFaq === idx ? 'text-[#FFD166] fill-[#FFD166]' : 'text-[#A0A3B1]'}`} />
+                      <Lightbulb className={`h-6 w-6 transition-colors ${openFaq === idx ? 'text-[#FFD166] fill-[#FFD166]' : 'text-gray-400'}`} />
                     </div>
-                    <span className="font-black text-[#2D3142] text-lg pr-4">{faq.q}</span>
+                    <span className="font-black text-lg pr-4">{faq.q}</span>
                   </div>
-                  
-                  {/* Clay Toggle Button */}
                   <div className={`relative w-12 h-12 rounded-[1rem] flex items-center justify-center shrink-0 transition-all ${openFaq === idx ? clayInput : clayIcon}`}>
-                    <ChevronDown className={`h-6 w-6 transition-transform duration-300 ${openFaq === idx ? 'rotate-180 text-[#7B61FF]' : 'text-[#A0A3B1]'}`} />
+                    <ChevronDown className={`h-6 w-6 transition-transform duration-300 ${openFaq === idx ? 'rotate-180 text-[#7B61FF]' : 'text-gray-400'}`} />
                   </div>
                 </button>
                 <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openFaq === idx ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-                  <div className="px-8 pb-8 pt-4 ml-[4.5rem] text-[#8E92A4] text-base leading-relaxed font-bold">
+                  <div className="px-8 pb-8 pt-4 ml-[4.5rem] text-gray-500 text-base leading-relaxed font-bold">
                     {faq.a}
                   </div>
                 </div>
@@ -528,11 +521,11 @@ export default function ElectricityCalculator({
       </main>
 
       {/* CLAY FOOTER */}
-      <footer className="mt-24 pt-20 pb-12 bg-[#EAEFF5]">
+      <footer className="mt-24 pt-20 pb-12 bg-white/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className={`${clayPanel} p-10 mb-12`}>
-            <h3 className="text-2xl font-black mb-10 text-[#2D3142] flex items-center gap-4">
-              <div className={`${clayIcon} h-12 w-12`}><MapPin className="text-[#FF6188] h-6 w-6" /></div> 
+          <div className={`${clayCard} p-10 mb-12`}>
+            <h3 className="text-2xl font-black mb-10 flex items-center gap-4">
+              <div className={`${clayIcon} h-12 w-12`}><MapPin className={`${clayAccent} h-6 w-6`} /></div> 
               State Calculators
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -540,7 +533,7 @@ export default function ElectricityCalculator({
                 <Link 
                   key={s} 
                   href={`/calculator/${s.toLowerCase().replace(/\s+/g, '-').replace(/&/g, 'and')}`}
-                  className={`${clayBtnSecondary} flex items-center justify-center h-14 w-full text-xs sm:text-sm text-[#8E92A4] font-black px-4 hover:text-[#7B61FF] text-center`}
+                  className={`${clayBtnSecondary} flex items-center justify-center h-[40px] w-full text-xs sm:text-sm text-gray-500 font-black px-4 hover:text-[#7B61FF] text-center border-none`}
                 >
                   <span className="truncate">{s}</span>
                 </Link>
@@ -548,20 +541,20 @@ export default function ElectricityCalculator({
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 text-[15px] text-[#A0A3B1] font-bold px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 text-[15px] text-gray-500 font-bold px-4">
             <div className="flex items-center gap-4">
-              <div className={`${clayIcon} h-12 w-12 bg-[#7B61FF] shadow-[5px_5px_10px_#D6D9E6,inset_-2px_-2px_5px_rgba(0,0,0,0.2),inset_2px_2px_5px_rgba(255,255,255,0.3)]`}>
+              <div className={`${clayBtn} p-3 !shadow-none !rounded-[1rem]`}>
                 <Zap className="h-5 w-5 text-white fill-white" />
               </div>
-              <span className="font-black text-[#2D3142] tracking-widest uppercase text-xl">VidyutCalc</span>
+              <span className="font-black tracking-widest uppercase text-xl">VidyutCalc</span>
             </div>
             
-            <p className="text-center md:text-left">© {new Date().getFullYear()} VidyutCalc India.</p>
+            <p className="text-center md:text-left">© {new Date().getFullYear()} VidyutCalc India. Claymorphism Edition.</p>
             
             <div className="flex gap-8">
-              <Link href="#" className="hover:text-[#7B61FF] transition">Privacy</Link>
-              <Link href="#" className="hover:text-[#7B61FF] transition">Terms</Link>
-              <Link href="#" className="hover:text-[#7B61FF] transition">Contact</Link>
+              <Link href="#" className={`hover:${clayAccent} transition`}>Privacy</Link>
+              <Link href="#" className={`hover:${clayAccent} transition`}>Terms</Link>
+              <Link href="#" className={`hover:${clayAccent} transition`}>Contact</Link>
             </div>
           </div>
         </div>
