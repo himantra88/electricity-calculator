@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, ChevronRight, Zap, Lightbulb, BookOpen, ShieldCheck, MapPin } from 'lucide-react';
 
-// --- COMPREHENSIVE STATE LIST ---
+// --- COMPREHENSIVE STATE LIST (36 States & UTs) ---
 const statesList = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
   "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
@@ -15,7 +15,7 @@ const statesList = [
 // --- GENERATE TARIFF DATA ---
 const defaultTariffData: Record<string, any> = {};
 
-// 1. Create a standard fallback tariff for all states so the calculator works
+// 1. Create a standard fallback tariff for states not in your specific list
 const standardDomestic = {
   slabs: [{ max: 100, rate: 3.50 }, { max: 300, rate: 5.50 }, { max: 500, rate: 7.50 }, { max: Infinity, rate: 8.50 }],
   fixedCharge: 50, meterRent: 10, dutyPercent: 5, fac: 0.10
@@ -25,23 +25,45 @@ const standardCommercial = {
   fixedCharge: 200, meterRent: 20, dutyPercent: 10, fac: 0.20
 };
 
+// Apply standard default to all 36 states first
 statesList.forEach(state => {
-  defaultTariffData[state] = { Domestic: { ...standardDomestic }, Commercial: { ...standardCommercial } };
+  defaultTariffData[state] = { 
+    Domestic: { ...standardDomestic, slabs: [...standardDomestic.slabs] }, 
+    Commercial: { ...standardCommercial, slabs: [...standardCommercial.slabs] } 
+  };
 });
 
-// 2. Override specific states with more precise mock data
-defaultTariffData['Maharashtra'] = {
-  Domestic: { slabs: [{ max: 100, rate: 5.36 }, { max: 300, rate: 9.38 }, { max: 500, rate: 13.25 }, { max: Infinity, rate: 14.85 }], fixedCharge: 115, meterRent: 0, dutyPercent: 16, fac: 0.15 },
-  Commercial: { slabs: [{ max: 200, rate: 7.36 }, { max: Infinity, rate: 11.38 }], fixedCharge: 400, meterRent: 20, dutyPercent: 21, fac: 0.25 }
+// 2. Inject your specific state data (Mapped to 3-tier slabs: 0-200, 201-500, Above 500)
+const stateSpecificRates = {
+  "Andhra Pradesh": { low: 3.80, mid: 6.00, high: 8.20 },
+  "Assam": { low: 4.20, mid: 6.05, high: 7.90 },
+  "Bihar": { low: 3.75, mid: 5.85, high: 8.00 },
+  "Delhi": { low: 0.00, mid: 4.50, high: 8.00 }, // 0-200 free tier
+  "Gujarat": { low: 3.60, mid: 5.45, high: 7.30 },
+  "Haryana": { low: 2.20, mid: 4.65, high: 7.10 },
+  "Karnataka": { low: 4.75, mid: 7.10, high: 9.50 },
+  "Kerala": { low: 3.80, mid: 6.15, high: 8.50 },
+  "Madhya Pradesh": { low: 3.50, mid: 5.65, high: 7.80 },
+  "Maharashtra": { low: 4.43, mid: 9.38, high: 14.33 },
+  "Odisha": { low: 3.00, mid: 4.90, high: 6.80 },
+  "Punjab": { low: 4.10, mid: 5.80, high: 7.50 },
+  "Rajasthan": { low: 4.75, mid: 6.35, high: 7.95 },
+  "Tamil Nadu": { low: 4.95, mid: 8.00, high: 11.05 },
+  "Telangana": { low: 3.60, mid: 5.55, high: 7.50 },
+  "Uttar Pradesh": { low: 3.35, mid: 5.65, high: 8.00 },
+  "West Bengal": { low: 3.30, mid: 5.90, high: 8.50 }
 };
-defaultTariffData['Delhi'] = {
-  Domestic: { slabs: [{ max: 200, rate: 3.00 }, { max: 400, rate: 4.50 }, { max: 800, rate: 6.50 }, { max: Infinity, rate: 7.00 }], fixedCharge: 40, meterRent: 0, dutyPercent: 5, fac: 0.00 },
-  Commercial: { slabs: [{ max: Infinity, rate: 8.50 }], fixedCharge: 250, meterRent: 0, dutyPercent: 5, fac: 0.00 }
-};
-defaultTariffData['Karnataka'] = {
-  Domestic: { slabs: [{ max: 100, rate: 4.75 }, { max: 200, rate: 7.00 }, { max: Infinity, rate: 8.20 }], fixedCharge: 100, meterRent: 0, dutyPercent: 9, fac: 0.10 },
-  Commercial: { slabs: [{ max: 50, rate: 8.50 }, { max: Infinity, rate: 9.50 }], fixedCharge: 150, meterRent: 15, dutyPercent: 9, fac: 0.15 }
-};
+
+// Apply the specific rates to the data object
+Object.entries(stateSpecificRates).forEach(([stateName, rates]) => {
+  if (defaultTariffData[stateName]) {
+    defaultTariffData[stateName].Domestic.slabs = [
+      { max: 200, rate: rates.low },
+      { max: 500, rate: rates.mid },
+      { max: Infinity, rate: rates.high }
+    ];
+  }
+});
 
 export default function ElectricityCalculator() {
   const [state, setState] = useState('Maharashtra');
