@@ -22,25 +22,24 @@ const standardCommercial = { slabs: [{ max: 200, rate: 7.50 }, { max: Infinity, 
 
 // FIX: Generate varied base parameters for each state so the table visibly updates
 statesList.forEach((state, index) => {
-  // Using index to create pseudo-random but consistent variations per state
   const variation = (index % 7); 
   
   defaultTariffData[state] = { 
     Domestic: { 
       ...standardDomestic, 
       slabs: [...standardDomestic.slabs],
-      fixedCharge: 40 + (variation * 10), // Varies from 40 to 100
-      meterRent: 10 + (variation * 2),    // Varies from 10 to 22
-      dutyPercent: 4 + variation,         // Varies from 4% to 10%
-      fac: parseFloat((0.10 + (variation * 0.05)).toFixed(2)) // Varies from 0.10 to 0.40
+      fixedCharge: 40 + (variation * 10),
+      meterRent: 10 + (variation * 2),
+      dutyPercent: 4 + variation,
+      fac: parseFloat((0.10 + (variation * 0.05)).toFixed(2))
     }, 
     Commercial: { 
       ...standardCommercial, 
       slabs: [...standardCommercial.slabs],
-      fixedCharge: 150 + (variation * 25), // Varies from 150 to 300
-      meterRent: 20 + (variation * 5),     // Varies from 20 to 50
-      dutyPercent: 8 + variation,          // Varies from 8% to 14%
-      fac: parseFloat((0.20 + (variation * 0.08)).toFixed(2)) // Varies from 0.20 to 0.68
+      fixedCharge: 150 + (variation * 25),
+      meterRent: 20 + (variation * 5),
+      dutyPercent: 8 + variation,
+      fac: parseFloat((0.20 + (variation * 0.08)).toFixed(2))
     } 
   };
 });
@@ -618,7 +617,7 @@ export default function ElectricityCalculator() {
                     setState(s); 
                     window.scrollTo({top: 0, behavior: 'smooth'});
                   }} 
-                  className="text-xs md:text-sm text-gray-600 font-bold bg-neuBg shadow-neu hover:shadow-neu-inset active:shadow-neu-inset px-4 py-3 rounded-xl hover:text-neuGreen transition-all duration-300 text-center border border-transparent hover:border-[#e2e8e4]"
+                  className="flex items-center justify-center h-20 w-full text-xs sm:text-sm text-gray-600 font-bold bg-neuBg shadow-neu hover:shadow-neu-inset active:shadow-neu-inset px-3 py-2 rounded-xl hover:text-neuGreen transition-all duration-300 text-center border border-transparent hover:border-[#e2e8e4] leading-tight"
                 >
                   {s}
                 </a>
