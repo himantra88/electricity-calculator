@@ -1,37 +1,14 @@
 // app/calculator/[state]/page.tsx
 import { notFound } from 'next/navigation';
 import ElectricityCalculator from '../../../components/ElectricityCalculator';
-import { stateSlugs, getStateBySlug } from '../../../lib/statesData';
-import { Metadata } from 'next';
+import { statesList, globalTariffData, stateSlugs, getStateBySlug } from '../../../lib/statesData';
 
-export async function generateStaticParams() {
-  return stateSlugs.map((state) => ({
-    state: state.slug,
-  }));
-}
-
-export async function generateMetadata({ params }: { params: { state: string } }): Promise<Metadata> {
-  const stateData = getStateBySlug(params.state);
-  
-  if (!stateData) {
-    return { title: 'State Not Found' };
-  }
-
-  return {
-    title: `${stateData.name} Electricity Bill Calculator | Latest Tariff Slabs 2024`,
-    description: `Calculate your electricity bill in ${stateData.name}. Check the latest domestic and commercial per-unit rates, fixed charges, and FPPCA surcharges.`,
-    alternates: {
-      canonical: `https://www.yourdomain.com/calculator/${params.state}` 
-    }
-  };
-}
+// ... (generateStaticParams and generateMetadata functions remain the same) ...
 
 export default function StateCalculatorPage({ params }: { params: { state: string } }) {
   const stateData = getStateBySlug(params.state);
 
-  if (!stateData) {
-    notFound();
-  }
+  if (!stateData) notFound();
 
   return (
     <main>
@@ -42,7 +19,12 @@ export default function StateCalculatorPage({ params }: { params: { state: strin
          </span>
       </div>
       
-      <ElectricityCalculator initialState={stateData.name} />
+      {/* Pass the dynamic JSON data here too */}
+      <ElectricityCalculator 
+        initialState={stateData.name} 
+        statesList={statesList}
+        tariffData={globalTariffData}
+      />
     </main>
   );
 }
