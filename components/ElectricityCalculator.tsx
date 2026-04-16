@@ -2,34 +2,75 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { statesList } from '@/lib/statesData';
 import { 
   Settings, Zap, Lightbulb, ShieldCheck, MapPin, 
   Menu, X, BarChart3, Scale, Info, HelpCircle, ChevronDown, 
   Home, Building2, TrendingUp, DollarSign, ListOrdered, FileSearch, TableProperties
 } from 'lucide-react';
 
-// --- DATA STRUCTURES ---
-const defaultTariffData: Record<string, any> = {};
-const standardDomestic = { slabs: [{ max: 100, rate: 3.50 }, { max: 300, rate: 5.50 }, { max: 500, rate: 7.50 }, { max: Infinity, rate: 8.50 }] };
-const standardCommercial = { slabs: [{ max: 200, rate: 7.50 }, { max: Infinity, rate: 9.50 }] };
+// --- TYPESCRIPT INTERFACES (Fixes the Vercel Build Errors) ---
+interface Slab {
+  max: number;
+  rate: number;
+}
 
-// Generate varied base parameters for each state so the table visibly updates
+interface TariffDetails {
+  slabs: Slab[];
+  fixedCharge: number;
+  meterRent: number;
+  dutyPercent: number;
+  fac: number;
+}
+
+interface TariffData {
+  Domestic: TariffDetails;
+  Commercial: TariffDetails;
+  [key: string]: TariffDetails; // Allows dynamic string indexing
+}
+
+interface SlabBreakdown {
+  range: string;
+  units: number;
+  rate: number;
+  cost: number;
+}
+
+interface BillResult {
+  consumed: number;
+  totalEnergyCharge: number;
+  slabBreakdown: SlabBreakdown[];
+  finalTotal: number;
+  facTotal: number;
+  dutyTotal: number;
+  fixedCharge: number;
+  meterRent: number;
+}
+
+// --- DATA STRUCTURES ---
+const statesList = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", 
+  "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", 
+  "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", 
+  "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+];
+
+const defaultTariffData: Record<string, TariffData> = {};
+const standardDomesticSlabs: Slab[] = [{ max: 100, rate: 3.50 }, { max: 300, rate: 5.50 }, { max: 500, rate: 7.50 }, { max: Infinity, rate: 8.50 }];
+const standardCommercialSlabs: Slab[] = [{ max: 200, rate: 7.50 }, { max: Infinity, rate: 9.50 }];
+
 statesList.forEach((state, index) => {
   const variation = (index % 7); 
-  
   defaultTariffData[state] = { 
     Domestic: { 
-      ...standardDomestic, 
-      slabs: [...standardDomestic.slabs],
+      slabs: [...standardDomesticSlabs],
       fixedCharge: 40 + (variation * 10),
       meterRent: 10 + (variation * 2),
       dutyPercent: 4 + variation,
       fac: parseFloat((0.10 + (variation * 0.05)).toFixed(2))
     }, 
     Commercial: { 
-      ...standardCommercial, 
-      slabs: [...standardCommercial.slabs],
+      slabs: [...standardCommercialSlabs],
       fixedCharge: 150 + (variation * 25),
       meterRent: 20 + (variation * 5),
       dutyPercent: 8 + variation,
@@ -38,7 +79,7 @@ statesList.forEach((state, index) => {
   };
 });
 
-const stateSpecificRates = {
+const stateSpecificRates: Record<string, { low: number; mid: number; high: number }> = {
   "Andhra Pradesh": { low: 3.80, mid: 6.00, high: 8.20 }, "Assam": { low: 4.20, mid: 6.05, high: 7.90 }, "Bihar": { low: 3.75, mid: 5.85, high: 8.00 },
   "Delhi": { low: 0.00, mid: 4.50, high: 8.00 }, "Gujarat": { low: 3.60, mid: 5.45, high: 7.30 }, "Haryana": { low: 2.20, mid: 4.65, high: 7.10 },
   "Karnataka": { low: 4.75, mid: 7.10, high: 9.50 }, "Kerala": { low: 3.80, mid: 6.15, high: 8.50 }, "Madhya Pradesh": { low: 3.50, mid: 5.65, high: 7.80 },
@@ -89,7 +130,6 @@ const faqs = [
   { q: "Can I pay my bill online?", a: "Yes, via your state board's portal, UPI apps (GPay, PhonePe), or bank applications using your consumer number." }
 ];
 
-// Reusable AdSense Component
 const AdUnit = ({ className = "my-8 rounded-2xl overflow-hidden shadow-neu-inset bg-neuBg border border-[#e2e8e4]" }) => (
   <aside className={`w-full ${className}`}>
     <div className="adsbygoogle-placeholder w-full h-[100px] flex items-center justify-center text-sm font-bold text-gray-400 uppercase tracking-widest">
@@ -98,11 +138,11 @@ const AdUnit = ({ className = "my-8 rounded-2xl overflow-hidden shadow-neu-inset
   </aside>
 );
 
-// Strictly typed interface for the Select component
+// Strictly Typed Select Component
 interface NeuSelectProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  options: string[] | { val: string; label: string }[];
+  options: (string | { val: string; label: string })[];
   className?: string;
 }
 
@@ -113,11 +153,12 @@ const NeuSelect: React.FC<NeuSelectProps> = ({ value, onChange, options, classNa
       value={value} 
       onChange={onChange}
     >
-      {options.map((opt) => (
-        typeof opt === 'string' 
-          ? <option key={opt} value={opt}>{opt}</option>
-          : <option key={opt.val} value={opt.val}>{opt.label}</option>
-      ))}
+      {options.map((opt) => {
+        if (typeof opt === 'string') {
+          return <option key={opt} value={opt}>{opt}</option>;
+        }
+        return <option key={opt.val} value={opt.val}>{opt.label}</option>;
+      })}
     </select>
     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-transform duration-300 group-hover:translate-y(-2px)">
       <ChevronDown className="h-5 w-5 text-neuGreen" />
@@ -129,25 +170,20 @@ const NeuSelect: React.FC<NeuSelectProps> = ({ value, onChange, options, classNa
 export default function ElectricityCalculator({ initialState = 'Maharashtra' }: { initialState?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // Main Calculator State
   const [state, setState] = useState(initialState);
   const [connType, setConnType] = useState('Domestic');
   const [units, setUnits] = useState('');
-  const [tariff, setTariff] = useState(defaultTariffData[state]?.[connType] || defaultTariffData['Maharashtra']['Domestic']);
+  const [tariff, setTariff] = useState<TariffDetails>(defaultTariffData[state]?.[connType] || defaultTariffData['Maharashtra']['Domestic']);
   const [isEditing, setIsEditing] = useState(false);
-  const [billResult, setBillResult] = useState<any>(null);
+  const [billResult, setBillResult] = useState<BillResult | null>(null);
 
-  // Widget States
   const [compStateA, setCompStateA] = useState('Maharashtra');
   const [compStateB, setCompStateB] = useState('Delhi');
   const [natAvgState, setNatAvgState] = useState('Maharashtra');
   const [lookupState, setLookupState] = useState('Maharashtra');
   const [tableState, setTableState] = useState('Maharashtra');
-  
-  // FAQ State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  // Sync Main Calculator Tariff
   useEffect(() => {
     if (defaultTariffData[state]) {
       setTariff(defaultTariffData[state][connType]);
@@ -155,12 +191,11 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
     }
   }, [state, connType]);
 
-  // Core Calculation Engine
-  const calculateEngine = (calcUnits: number, calcTariff: any) => {
+  const calculateEngine = (calcUnits: number, calcTariff: TariffDetails): Omit<BillResult, 'consumed'> => {
     let remainingUnits = calcUnits;
     let totalEnergyCharge = 0;
     let prevMax = 0;
-    const slabBreakdown = [];
+    const slabBreakdown: SlabBreakdown[] = [];
 
     for (const slab of calcTariff.slabs) {
       if (remainingUnits <= 0) break;
@@ -168,10 +203,16 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
       const unitsInSlab = Math.min(remainingUnits, slabCapacity);
       const cost = unitsInSlab * slab.rate;
       totalEnergyCharge += cost;
-      slabBreakdown.push({ range: `${prevMax + 1} - ${slab.max === Infinity ? 'Above' : slab.max}`, units: unitsInSlab, rate: slab.rate, cost: cost });
+      slabBreakdown.push({ 
+        range: `${prevMax + 1} - ${slab.max === Infinity ? 'Above' : slab.max}`, 
+        units: unitsInSlab, 
+        rate: slab.rate, 
+        cost: cost 
+      });
       remainingUnits -= unitsInSlab;
       prevMax = slab.max;
     }
+    
     const facTotal = calcUnits * calcTariff.fac;
     const dutyTotal = (totalEnergyCharge + calcTariff.fixedCharge + facTotal) * (calcTariff.dutyPercent / 100);
     const finalTotal = totalEnergyCharge + calcTariff.fixedCharge + calcTariff.meterRent + facTotal + dutyTotal;
@@ -185,18 +226,18 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
     setBillResult({ consumed, ...calculateEngine(consumed, tariff) });
   };
 
-  const handleTariffChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => setTariff({ ...tariff, [field]: parseFloat(e.target.value) || 0 });
+  const handleTariffChange = (e: React.ChangeEvent<HTMLInputElement>, field: keyof TariffDetails) => {
+    setTariff({ ...tariff, [field]: parseFloat(e.target.value) || 0 });
+  };
 
-  // Visualizer Data (Base 500 units)
   const nationalAvg500 = 3500; 
-  const selectedNatAvgState500 = calculateEngine(500, defaultTariffData[natAvgState]['Domestic']).finalTotal;
-  const compA500 = calculateEngine(500, defaultTariffData[compStateA]['Domestic']).finalTotal;
-  const compB500 = calculateEngine(500, defaultTariffData[compStateB]['Domestic']).finalTotal;
+  const selectedNatAvgState500 = calculateEngine(500, defaultTariffData[natAvgState]?.Domestic || defaultTariffData['Maharashtra'].Domestic).finalTotal;
+  const compA500 = calculateEngine(500, defaultTariffData[compStateA]?.Domestic || defaultTariffData['Maharashtra'].Domestic).finalTotal;
+  const compB500 = calculateEngine(500, defaultTariffData[compStateB]?.Domestic || defaultTariffData['Delhi'].Domestic).finalTotal;
 
   return (
     <div className="min-h-screen bg-neuBg font-sans text-neuDark selection:bg-neuGreen selection:text-white transition-colors duration-300 overflow-x-hidden">
 
-      {/* HEADER */}
       <header className="sticky top-0 z-50 bg-neuBg shadow-neu-sm mb-8 border-b border-[#e2e8e4]">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 cursor-pointer group">
@@ -215,7 +256,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
             {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-neuBg shadow-neu px-6 py-6 space-y-4 font-bold text-neuDark absolute w-full z-40 border-t border-[#d1d9d3] origin-top animate-in slide-in-from-top-2">
             <a href="#calculator" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">Calculator</a>
@@ -230,7 +270,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
         
         <div className="max-w-4xl mx-auto"><AdUnit /></div>
 
-        {/* HERO & MAIN CALCULATOR */}
         <section id="calculator" className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-neuDark tracking-tight leading-tight">
@@ -274,7 +313,7 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
                   <div>
                     <p className="text-gray-400 font-bold mb-4 text-xs uppercase tracking-wider flex items-center gap-2"><Zap className="h-4 w-4"/> Energy Slabs</p>
                     <ul className="space-y-3 text-gray-600">
-                      {tariff.slabs.map((s: any, i: number) => (
+                      {tariff.slabs.map((s, i) => (
                         <li key={i} className="flex justify-between border-b border-dashed border-[#d1d9d3] pb-2"><span>Up to {s.max === Infinity ? 'Above' : s.max} units</span><span className="font-bold text-neuDark text-base">₹{s.rate.toFixed(2)}</span></li>
                       ))}
                     </ul>
@@ -306,7 +345,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
             </button>
           </article>
 
-          {/* RESULTS CARD */}
           {billResult && (
             <div className="bg-neuBg rounded-[2rem] p-8 md:p-12 shadow-neu border-t-8 border-neuGreen transition-all duration-500 mb-16 animate-in slide-in-from-bottom-8">
                <div className="text-center mb-10">
@@ -319,7 +357,7 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
                  <div className="flex justify-between font-black text-neuDark border-b-2 border-[#d1d9d3] pb-5 mb-5 text-xl">
                    <span className="flex items-center gap-2"><Zap className="h-5 w-5 text-neuGreen"/> Energy Charges</span><span className="text-neuGreen">₹{billResult.totalEnergyCharge.toFixed(2)}</span>
                  </div>
-                 {billResult.slabBreakdown.map((b: any, i: number) => (
+                 {billResult.slabBreakdown.map((b, i) => (
                    <div key={i} className="flex justify-between text-gray-600 pl-2 mb-4 text-base">
                      <span className="font-medium">{b.units} units × ₹{b.rate} <span className="text-xs text-gray-400 ml-1">({b.range} slab)</span></span>
                      <span className="font-bold text-neuDark">₹{b.cost.toFixed(2)}</span>
@@ -335,7 +373,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
             </div>
           )}
 
-          {/* HOW TO USE GUIDE */}
           <div className="mt-20">
             <h2 className="text-3xl font-black mb-10 flex items-center justify-center gap-4 text-neuDark">
               <ListOrdered className="text-neuGreen h-8 w-8" /> How to Use This Calculator
@@ -362,10 +399,7 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
 
         <AdUnit />
 
-        {/* DATA VISUALIZERS */}
         <section id="compare" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          
-          {/* State Matchup */}
           <article className="bg-neuBg rounded-[2rem] p-8 md:p-10 shadow-neu border border-[#e2e8e4]">
             <h2 className="text-2xl font-black mb-4 flex items-center gap-3 text-neuDark">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><Scale className="text-neuGreen h-6 w-6" /></div> State Matchup
@@ -391,7 +425,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
             </div>
           </article>
 
-          {/* National Average Visualizer */}
           <article className="bg-neuBg rounded-[2rem] p-8 md:p-10 shadow-neu border border-[#e2e8e4] flex flex-col justify-between">
             <div>
               <h2 className="text-2xl font-black mb-4 flex items-center gap-3 text-neuDark">
@@ -415,10 +448,7 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
           </article>
         </section>
 
-        {/* TARIFF DATA & TABLES */}
         <section id="lookup" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          
-          {/* Rate Comparison Table */}
           <article className="bg-neuBg rounded-[2rem] p-8 md:p-10 shadow-neu border border-[#e2e8e4]">
             <h2 className="text-2xl font-black mb-4 flex items-center gap-3 text-neuDark">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><TableProperties className="text-neuGreen h-6 w-6" /></div> Rate Comparison
@@ -438,30 +468,29 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
                 <tbody className="text-gray-600 font-medium">
                   <tr className="border-b border-[#d1d9d3] hover:bg-gray-50/30 transition-colors">
                     <td className="p-5">Fixed Charge</td>
-                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState].Domestic.fixedCharge}</td>
-                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState].Commercial.fixedCharge}</td>
+                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState]?.Domestic?.fixedCharge}</td>
+                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState]?.Commercial?.fixedCharge}</td>
                   </tr>
                   <tr className="border-b border-[#d1d9d3] hover:bg-gray-50/30 transition-colors">
                     <td className="p-5">Meter Rent</td>
-                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState].Domestic.meterRent}</td>
-                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState].Commercial.meterRent}</td>
+                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState]?.Domestic?.meterRent}</td>
+                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState]?.Commercial?.meterRent}</td>
                   </tr>
                   <tr className="border-b border-[#d1d9d3] hover:bg-gray-50/30 transition-colors">
                     <td className="p-5">Electricity Duty</td>
-                    <td className="p-5 font-bold text-neuDark">{defaultTariffData[tableState].Domestic.dutyPercent}%</td>
-                    <td className="p-5 font-bold text-neuDark">{defaultTariffData[tableState].Commercial.dutyPercent}%</td>
+                    <td className="p-5 font-bold text-neuDark">{defaultTariffData[tableState]?.Domestic?.dutyPercent}%</td>
+                    <td className="p-5 font-bold text-neuDark">{defaultTariffData[tableState]?.Commercial?.dutyPercent}%</td>
                   </tr>
                   <tr className="hover:bg-gray-50/30 transition-colors">
                     <td className="p-5">FPPCA (per unit)</td>
-                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState].Domestic.fac.toFixed(2)}</td>
-                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState].Commercial.fac.toFixed(2)}</td>
+                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState]?.Domestic?.fac.toFixed(2)}</td>
+                    <td className="p-5 font-bold text-neuDark">₹{defaultTariffData[tableState]?.Commercial?.fac.toFixed(2)}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </article>
 
-          {/* State Tariff Lookup */}
           <article className="bg-neuBg rounded-[2rem] p-8 md:p-10 shadow-neu border border-[#e2e8e4]">
             <h2 className="text-2xl font-black mb-4 flex items-center gap-3 text-neuDark">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><FileSearch className="text-neuGreen h-6 w-6" /></div> State Tariff Lookup
@@ -473,7 +502,7 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
               <div className="bg-neuBg shadow-neu-inset p-6 rounded-[1.5rem] border border-[#e2e8e4] hover:shadow-[inset_8px_8px_15px_#d1d9d3,inset_-8px_-8px_15px_#ffffff] transition-all">
                 <h4 className="font-black text-neuDark mb-5 border-b-2 border-neuGreen pb-3 inline-flex items-center gap-2"><Home className="h-4 w-4"/> Domestic Slabs</h4>
                 <ul className="space-y-4 text-sm text-gray-600 font-medium">
-                  {defaultTariffData[lookupState].Domestic.slabs.map((s: any, i: number) => (
+                  {defaultTariffData[lookupState]?.Domestic?.slabs.map((s, i) => (
                     <li key={i} className="flex justify-between border-b border-dashed border-[#d1d9d3] pb-2">
                       <span>Up to {s.max === Infinity ? 'Above' : s.max}</span><span className="font-bold text-neuDark text-base">₹{s.rate.toFixed(2)}</span>
                     </li>
@@ -483,7 +512,7 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
               <div className="bg-neuBg shadow-neu-inset p-6 rounded-[1.5rem] border border-[#e2e8e4] hover:shadow-[inset_8px_8px_15px_#d1d9d3,inset_-8px_-8px_15px_#ffffff] transition-all">
                 <h4 className="font-black text-neuDark mb-5 border-b-2 border-gray-400 pb-3 inline-flex items-center gap-2"><Building2 className="h-4 w-4"/> Commercial Slabs</h4>
                 <ul className="space-y-4 text-sm text-gray-600 font-medium">
-                  {defaultTariffData[lookupState].Commercial.slabs.map((s: any, i: number) => (
+                  {defaultTariffData[lookupState]?.Commercial?.slabs.map((s, i) => (
                     <li key={i} className="flex justify-between border-b border-dashed border-[#d1d9d3] pb-2">
                       <span>Up to {s.max === Infinity ? 'Above' : s.max}</span><span className="font-bold text-neuDark text-base">₹{s.rate.toFixed(2)}</span>
                     </li>
@@ -494,7 +523,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
           </article>
         </section>
 
-        {/* GUIDES & EDUCATIONAL CARDS */}
         <section id="guide" className="space-y-12">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-4xl font-black mb-5 text-neuDark tracking-tight">Understanding Your Bill</h2>
@@ -552,7 +580,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
           </div>
         </section>
 
-        {/* 10 TIPS SECTION */}
         <section id="tips" className="bg-neuBg shadow-neu-inset rounded-[3rem] p-8 md:p-16 border border-[#e2e8e4]">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-14 text-center md:text-left">
             <div className="bg-neuBg shadow-neu p-5 rounded-3xl shrink-0">
@@ -570,7 +597,6 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
           </div>
         </section>
 
-        {/* 20 FAQs ACCORDION */}
         <section id="faqs" className="max-w-4xl mx-auto pb-10">
           <h2 className="text-4xl font-black mb-12 text-center flex items-center justify-center gap-4 text-neuDark">
             <HelpCircle className="text-neuGreen h-10 w-10" /> Frequently Asked Questions
@@ -601,13 +627,10 @@ export default function ElectricityCalculator({ initialState = 'Maharashtra' }: 
 
       </main>
 
-      {/* BOTTOM AD UNIT */}
       <div className="max-w-7xl mx-auto px-4 mb-20"><AdUnit /></div>
 
-      {/* MASSIVE FOOTER WITH QUICK LINKS */}
       <footer className="bg-neuBg shadow-[0_-10px_30px_rgba(209,217,211,0.7)] pt-20 pb-10 mt-10 border-t border-[#e2e8e4]">
         <div className="max-w-7xl mx-auto px-4">
-          
           <div className="mb-16">
             <h3 className="text-2xl font-black mb-10 text-neuDark flex items-center gap-3">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><MapPin className="text-neuGreen h-6 w-6" /></div> Quick Links: State Bill Calculators
