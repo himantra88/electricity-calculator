@@ -6,7 +6,8 @@ import {
   Settings, Zap, Lightbulb, ShieldCheck, MapPin, 
   Menu, X, BarChart3, Scale, Info, HelpCircle, ChevronDown, 
   Home, Building2, TrendingUp, DollarSign, ListOrdered, FileSearch, TableProperties,
-  Search, Plus, Minus, Calculator, Snowflake, Tv, Droplets, Laptop, Shirt, Coffee, Wind, Sun, Activity
+  Search, Plus, Minus, Calculator, Snowflake, Tv, Droplets, Laptop, Shirt, Coffee, Wind, Sun, Activity,
+  MessageCircle, Printer
 } from 'lucide-react';
 import type { TariffData, TariffDetails } from '../lib/statesData';
 
@@ -64,18 +65,18 @@ const faqs = [
 
 // --- APPLIANCE LIBRARY DATA ---
 const applianceCatalog = [
-  { id: 'ac-1.5', name: '1.5 Ton AC', watts: 1500, defaultHours: 8, icon: Snowflake, color: '#3b82f6' }, // Blue
-  { id: 'ac-1.0', name: '1.0 Ton AC', watts: 1000, defaultHours: 8, icon: Snowflake, color: '#60a5fa' }, // Light Blue
-  { id: 'geyser', name: 'Water Heater', watts: 2000, defaultHours: 1, icon: Droplets, color: '#ef4444' }, // Red
-  { id: 'fridge', name: 'Refrigerator', watts: 150, defaultHours: 24, icon: Home, color: '#f59e0b' }, // Amber
-  { id: 'wm', name: 'Washing Machine', watts: 500, defaultHours: 1, icon: Shirt, color: '#8b5cf6' }, // Purple
-  { id: 'cooler', name: 'Desert Cooler', watts: 250, defaultHours: 10, icon: Wind, color: '#0ea5e9' }, // Cyan
-  { id: 'tv', name: 'LED TV (43")', watts: 60, defaultHours: 4, icon: Tv, color: '#ec4899' }, // Pink
-  { id: 'bldc-fan', name: 'BLDC Fan', watts: 28, defaultHours: 12, icon: Wind, color: '#10b981' }, // Emerald
-  { id: 'fan-std', name: 'Standard Fan', watts: 75, defaultHours: 12, icon: Wind, color: '#34d399' }, // Light Green
-  { id: 'led', name: 'LED Tube/Bulb', watts: 20, defaultHours: 6, icon: Lightbulb, color: '#fcd34d' }, // Yellow
-  { id: 'mixer', name: 'Mixer Grinder', watts: 500, defaultHours: 0.5, icon: Coffee, color: '#6366f1' }, // Indigo
-  { id: 'laptop', name: 'Laptop / PC', watts: 65, defaultHours: 6, icon: Laptop, color: '#64748b' }, // Gray
+  { id: 'ac-1.5', name: '1.5 Ton AC', watts: 1500, defaultHours: 8, icon: Snowflake, color: '#3b82f6' }, 
+  { id: 'ac-1.0', name: '1.0 Ton AC', watts: 1000, defaultHours: 8, icon: Snowflake, color: '#60a5fa' }, 
+  { id: 'geyser', name: 'Water Heater', watts: 2000, defaultHours: 1, icon: Droplets, color: '#ef4444' }, 
+  { id: 'fridge', name: 'Refrigerator', watts: 150, defaultHours: 24, icon: Home, color: '#f59e0b' }, 
+  { id: 'wm', name: 'Washing Machine', watts: 500, defaultHours: 1, icon: Shirt, color: '#8b5cf6' }, 
+  { id: 'cooler', name: 'Desert Cooler', watts: 250, defaultHours: 10, icon: Wind, color: '#0ea5e9' }, 
+  { id: 'tv', name: 'LED TV (43")', watts: 60, defaultHours: 4, icon: Tv, color: '#ec4899' }, 
+  { id: 'bldc-fan', name: 'BLDC Fan', watts: 28, defaultHours: 12, icon: Wind, color: '#10b981' }, 
+  { id: 'fan-std', name: 'Standard Fan', watts: 75, defaultHours: 12, icon: Wind, color: '#34d399' }, 
+  { id: 'led', name: 'LED Tube/Bulb', watts: 20, defaultHours: 6, icon: Lightbulb, color: '#fcd34d' }, 
+  { id: 'mixer', name: 'Mixer Grinder', watts: 500, defaultHours: 0.5, icon: Coffee, color: '#6366f1' }, 
+  { id: 'laptop', name: 'Laptop / PC', watts: 65, defaultHours: 6, icon: Laptop, color: '#64748b' }, 
 ];
 
 interface NeuSelectProps {
@@ -194,6 +195,19 @@ export default function ElectricityCalculator({
     setTariff({ ...tariff, [field]: parseFloat(e.target.value) || 0 });
   };
 
+  // --- Utility Functions: WhatsApp & PDF ---
+  const handleWhatsAppShare = () => {
+    if (!billResult) return;
+    
+    const text = `⚡ *VidyutCalc Bill Estimate*\n\n📍 *State:* ${state} (${connType})\n🔌 *Units Consumed:* ${billResult.consumed} kWh\n💰 *Estimated Total:* ₹${billResult.finalTotal.toFixed(2)}\n\n_Generate yours or download a PDF summary at:_\nhttps://vidyutcalc.com`;
+    
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleDownloadPDF = () => {
+    window.print();
+  };
+
   // --- Appliance Library Logic ---
   const handleApplianceChange = (id: string, field: 'qty' | 'hours', value: number) => {
     setHomeAppliances(prev => {
@@ -276,10 +290,9 @@ export default function ElectricityCalculator({
   };
 
   const gaugeValue = parseFloat(units) || 0;
-  const gaugePercent = Math.min(Math.max(gaugeValue / 800, 0), 1); // Cap at 800 for the visual arc
-  const gaugeStrokeDashoffset = 251.2 * (1 - gaugePercent); // 251.2 is approx Math.PI * 80 (radius)
+  const gaugePercent = Math.min(Math.max(gaugeValue / 800, 0), 1);
+  const gaugeStrokeDashoffset = 251.2 * (1 - gaugePercent); 
 
-  // Donut Chart Math
   let cumulativePercent = 0;
 
   const nationalAvg500 = 3500; 
@@ -290,9 +303,10 @@ export default function ElectricityCalculator({
   const compB500 = calculateEngine(500, safeData[compStateB]?.Domestic || fallbackTariff).finalTotal;
 
   return (
-    <div className="min-h-screen bg-neuBg font-sans text-neuDark selection:bg-neuGreen selection:text-white transition-colors duration-300 overflow-x-hidden">
+    <div className="min-h-screen bg-neuBg font-sans text-neuDark selection:bg-neuGreen selection:text-white transition-colors duration-300 overflow-x-hidden print:bg-white print:text-black">
 
-      <header className="sticky top-0 z-50 bg-neuBg shadow-neu-sm mb-8 border-b border-[#e2e8e4]">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 bg-neuBg shadow-neu-sm mb-8 border-b border-[#e2e8e4] print:hidden">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 cursor-pointer group">
             <div className="bg-neuBg shadow-neu p-2.5 rounded-full flex items-center justify-center transition-all duration-300 group-hover:shadow-neu-inset">
@@ -320,17 +334,17 @@ export default function ElectricityCalculator({
         )}
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 space-y-24">
+      <main className="max-w-7xl mx-auto px-4 space-y-24 print:space-y-4">
 
         <section id="calculator" className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 print:hidden">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-neuDark tracking-tight leading-tight">
               Accurate Electricity Bill<br/><span className="text-neuGreen">Calculator</span> for India
             </h1>
             <p className="text-gray-500 text-lg md:text-xl font-medium max-w-2xl mx-auto">Instantly calculate your energy charges, fixed costs, and taxes for 36 States & UTs.</p>
           </div>
 
-          <article className="bg-neuBg rounded-[2rem] shadow-neu p-6 md:p-10 transition-all duration-300 mb-16 border border-[#e2e8e4]">
+          <article className="bg-neuBg rounded-[2rem] shadow-neu p-6 md:p-10 transition-all duration-300 mb-16 border border-[#e2e8e4] print:hidden">
             
             <div className="flex bg-neuBg shadow-neu-inset rounded-xl p-1 mb-8 w-full md:w-fit mx-auto">
               <button 
@@ -487,11 +501,9 @@ export default function ElectricityCalculator({
             )}
           </article>
 
-          {/* --- NEW: ENERGY ANALYTICS VISUALIZERS --- */}
+          {/* ENERGY ANALYTICS VISUALIZERS */}
           {billResult && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16 animate-in slide-in-from-bottom-8">
-              
-              {/* Custom SVG Gauge (Efficiency Meter) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16 animate-in slide-in-from-bottom-8 print:hidden">
               <div className="bg-neuBg rounded-[2rem] p-8 shadow-neu border border-[#e2e8e4]">
                 <div className="flex justify-between items-center mb-6">
                   <div>
@@ -503,9 +515,7 @@ export default function ElectricityCalculator({
 
                 <div className="relative w-full h-48 flex items-end justify-center pt-8 overflow-hidden">
                   <svg viewBox="0 0 200 100" className="w-full max-w-[300px] overflow-visible">
-                    {/* Track */}
                     <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#d1d9d3" strokeWidth="20" strokeLinecap="round" className="drop-shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1)]" />
-                    {/* Fill */}
                     <path 
                       d="M 20 100 A 80 80 0 0 1 180 100" 
                       fill="none" 
@@ -516,7 +526,6 @@ export default function ElectricityCalculator({
                       strokeDashoffset={gaugeStrokeDashoffset}
                       className="transition-all duration-1000 ease-out"
                     />
-                    {/* Tick Markers */}
                     <line x1="20" y1="100" x2="10" y2="100" stroke="#a0aec0" strokeWidth="3" />
                     <line x1="180" y1="100" x2="190" y2="100" stroke="#a0aec0" strokeWidth="3" />
                     <line x1="100" y1="20" x2="100" y2="10" stroke="#a0aec0" strokeWidth="3" />
@@ -534,7 +543,6 @@ export default function ElectricityCalculator({
                 </div>
               </div>
 
-              {/* Custom SVG Donut Chart (Energy Hogs) */}
               <div className="bg-neuBg rounded-[2rem] p-8 shadow-neu border border-[#e2e8e4]">
                 <div className="flex justify-between items-center mb-6">
                   <div>
@@ -546,7 +554,6 @@ export default function ElectricityCalculator({
 
                 {applianceBreakdown.length > 0 ? (
                   <div className="flex flex-col sm:flex-row items-center gap-8 h-full pb-4">
-                    {/* Donut Graphic */}
                     <div className="relative w-40 h-40 shrink-0">
                       <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-md">
                         <circle cx="50" cy="50" r="40" fill="none" stroke="#d1d9d3" strokeWidth="12" />
@@ -577,7 +584,6 @@ export default function ElectricityCalculator({
                       </div>
                     </div>
                     
-                    {/* Legend */}
                     <div className="w-full space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
                       {applianceBreakdown.slice(0, 5).map((app, i) => (
                         <div key={i} className="flex items-center justify-between">
@@ -600,38 +606,62 @@ export default function ElectricityCalculator({
             </div>
           )}
 
-          {/* DETAILED RESULTS BREAKDOWN CARD */}
+          {/* DETAILED RESULTS BREAKDOWN CARD (WITH WHATSAPP/PDF ACTIONS) */}
           {billResult && (
-            <div className="bg-neuBg rounded-[2rem] p-8 md:p-12 shadow-neu border-t-8 border-neuGreen transition-all duration-500 mb-16 animate-in slide-in-from-bottom-8">
+            <div className="bg-neuBg rounded-[2rem] p-8 md:p-12 shadow-neu border-t-8 border-neuGreen transition-all duration-500 mb-16 animate-in slide-in-from-bottom-8 print:shadow-none print:border-none print:p-0 print:m-0">
+               
+               {/* Hidden Print Header (Only visible on paper) */}
+               <div className="hidden print:block text-center mb-10 pb-6 border-b-2 border-gray-300">
+                 <h1 className="text-3xl font-black text-black tracking-widest uppercase">VidyutCalc</h1>
+                 <p className="text-gray-500 mt-2 font-bold">Official Electricity Bill Estimate</p>
+                 <p className="text-gray-400 text-sm mt-1">Generated on {new Date().toLocaleDateString()}</p>
+               </div>
+
                <div className="text-center mb-10">
                  <p className="text-gray-500 font-bold uppercase tracking-widest text-sm mb-4">Estimated Total Bill</p>
-                 <p className="text-6xl md:text-7xl font-black text-neuGreen drop-shadow-sm tracking-tighter">₹{billResult.finalTotal.toFixed(2)}</p>
-                 <p className="text-gray-500 mt-4 text-sm font-medium bg-neuBg shadow-neu-inset inline-block px-6 py-2 rounded-full border border-[#e2e8e4]">For {billResult.consumed} Units in {state} ({connType})</p>
+                 <p className="text-6xl md:text-7xl font-black text-neuGreen drop-shadow-sm tracking-tighter print:text-black print:drop-shadow-none">₹{billResult.finalTotal.toFixed(2)}</p>
+                 <p className="text-gray-500 mt-4 text-sm font-medium bg-neuBg shadow-neu-inset inline-block px-6 py-2 rounded-full border border-[#e2e8e4] print:shadow-none print:bg-gray-100 print:text-black">For {billResult.consumed} Units in {state} ({connType})</p>
                </div>
                
-               <div className="bg-neuBg shadow-neu-inset rounded-3xl p-8 md:p-10 text-sm border border-[#e2e8e4]">
-                 <div className="flex justify-between font-black text-neuDark border-b-2 border-[#d1d9d3] pb-5 mb-5 text-xl">
-                   <span className="flex items-center gap-2"><Zap className="h-5 w-5 text-neuGreen"/> Energy Charges</span><span className="text-neuGreen">₹{billResult.totalEnergyCharge.toFixed(2)}</span>
+               <div className="bg-neuBg shadow-neu-inset rounded-3xl p-8 md:p-10 text-sm border border-[#e2e8e4] print:shadow-none print:border-2 print:border-gray-200">
+                 <div className="flex justify-between font-black text-neuDark border-b-2 border-[#d1d9d3] pb-5 mb-5 text-xl print:text-black print:border-gray-300">
+                   <span className="flex items-center gap-2"><Zap className="h-5 w-5 text-neuGreen print:text-black"/> Energy Charges</span><span className="text-neuGreen print:text-black">₹{billResult.totalEnergyCharge.toFixed(2)}</span>
                  </div>
                  {billResult.slabBreakdown.map((b, i) => (
-                   <div key={i} className="flex justify-between text-gray-600 pl-2 mb-4 text-base">
-                     <span className="font-medium">{b.units} units × ₹{b.rate} <span className="text-xs text-gray-400 ml-1">({b.range} slab)</span></span>
-                     <span className="font-bold text-neuDark">₹{b.cost.toFixed(2)}</span>
+                   <div key={i} className="flex justify-between text-gray-600 pl-2 mb-4 text-base print:text-black">
+                     <span className="font-medium">{b.units} units × ₹{b.rate} <span className="text-xs text-gray-400 ml-1 print:text-gray-500">({b.range} slab)</span></span>
+                     <span className="font-bold text-neuDark print:text-black">₹{b.cost.toFixed(2)}</span>
                    </div>
                  ))}
-                 <div className="pt-6 border-t-2 border-dashed border-[#d1d9d3] space-y-5 mt-6 text-base">
-                   <div className="flex justify-between text-gray-600 font-medium"><span>Fixed Charges</span><span className="font-bold text-neuDark">₹{billResult.fixedCharge.toFixed(2)}</span></div>
-                   {billResult.meterRent > 0 && <div className="flex justify-between text-gray-600 font-medium"><span>Meter Rent</span><span className="font-bold text-neuDark">₹{billResult.meterRent.toFixed(2)}</span></div>}
-                   <div className="flex justify-between text-gray-600 font-medium"><span>FPPCA / Surcharge</span><span className="font-bold text-neuDark">₹{billResult.facTotal.toFixed(2)}</span></div>
-                   <div className="flex justify-between text-gray-600 font-medium"><span>Electricity Duty</span><span className="font-bold text-neuDark">₹{billResult.dutyTotal.toFixed(2)}</span></div>
+                 <div className="pt-6 border-t-2 border-dashed border-[#d1d9d3] space-y-5 mt-6 text-base print:border-gray-300">
+                   <div className="flex justify-between text-gray-600 font-medium print:text-black"><span>Fixed Charges</span><span className="font-bold text-neuDark print:text-black">₹{billResult.fixedCharge.toFixed(2)}</span></div>
+                   {billResult.meterRent > 0 && <div className="flex justify-between text-gray-600 font-medium print:text-black"><span>Meter Rent</span><span className="font-bold text-neuDark print:text-black">₹{billResult.meterRent.toFixed(2)}</span></div>}
+                   <div className="flex justify-between text-gray-600 font-medium print:text-black"><span>FPPCA / Surcharge</span><span className="font-bold text-neuDark print:text-black">₹{billResult.facTotal.toFixed(2)}</span></div>
+                   <div className="flex justify-between text-gray-600 font-medium print:text-black"><span>Electricity Duty</span><span className="font-bold text-neuDark print:text-black">₹{billResult.dutyTotal.toFixed(2)}</span></div>
                  </div>
+               </div>
+
+               {/* SHARE & EXPORT BUTTONS (Hidden during print) */}
+               <div className="flex flex-col sm:flex-row gap-4 mt-8 print:hidden">
+                 <button 
+                   onClick={handleWhatsAppShare} 
+                   className="flex-1 bg-neuBg text-[#25D366] font-black px-6 py-5 rounded-2xl shadow-neu active:shadow-neu-inset transition-all duration-300 flex justify-center items-center gap-3 border border-[#e2e8e4]"
+                 >
+                   <MessageCircle className="h-6 w-6" /> Share on WhatsApp
+                 </button>
+                 <button 
+                   onClick={handleDownloadPDF} 
+                   className="flex-1 bg-neuBg text-neuDark font-black px-6 py-5 rounded-2xl shadow-neu active:shadow-neu-inset transition-all duration-300 flex justify-center items-center gap-3 border border-[#e2e8e4]"
+                 >
+                   <Printer className="h-6 w-6 text-gray-500" /> Save as PDF
+                 </button>
                </div>
             </div>
           )}
         </section>
 
         {/* --- SOLAR ROI ESTIMATOR --- */}
-        <section id="solar" className="max-w-4xl mx-auto">
+        <section id="solar" className="max-w-4xl mx-auto print:hidden">
           <div className="bg-neuBg rounded-[2rem] shadow-neu p-8 md:p-12 border border-[#e2e8e4] relative overflow-hidden">
             <div className="absolute -top-10 -right-10 opacity-10 pointer-events-none">
               <Sun size={200} className="text-yellow-500 fill-yellow-500 animate-spin-slow" />
@@ -692,7 +722,7 @@ export default function ElectricityCalculator({
         </section>
 
         {/* DATA VISUALIZERS */}
-        <section id="compare" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <section id="compare" className="grid grid-cols-1 lg:grid-cols-2 gap-12 print:hidden">
           <article className="bg-neuBg rounded-[2rem] p-8 md:p-10 shadow-neu border border-[#e2e8e4]">
             <h2 className="text-2xl font-black mb-4 flex items-center gap-3 text-neuDark">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><Scale className="text-neuGreen h-6 w-6" /></div> State Matchup
@@ -742,7 +772,7 @@ export default function ElectricityCalculator({
         </section>
 
         {/* TARIFF DATA & TABLES */}
-        <section id="lookup" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <section id="lookup" className="grid grid-cols-1 lg:grid-cols-2 gap-12 print:hidden">
           <article className="bg-neuBg rounded-[2rem] p-8 md:p-10 shadow-neu border border-[#e2e8e4]">
             <h2 className="text-2xl font-black mb-4 flex items-center gap-3 text-neuDark">
               <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><TableProperties className="text-neuGreen h-6 w-6" /></div> Rate Comparison
@@ -818,7 +848,7 @@ export default function ElectricityCalculator({
         </section>
 
         {/* GUIDES & EDUCATIONAL CARDS */}
-        <section id="guide" className="space-y-12">
+        <section id="guide" className="space-y-12 print:hidden">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-4xl font-black mb-5 text-neuDark tracking-tight">Understanding Your Bill</h2>
             <p className="text-gray-500 font-medium text-lg">Demystifying the charges, surcharges, and terminology used by Indian electricity distribution boards.</p>
@@ -875,7 +905,7 @@ export default function ElectricityCalculator({
           </div>
         </section>
 
-        <section id="tips" className="bg-neuBg shadow-neu-inset rounded-[3rem] p-8 md:p-16 border border-[#e2e8e4]">
+        <section id="tips" className="bg-neuBg shadow-neu-inset rounded-[3rem] p-8 md:p-16 border border-[#e2e8e4] print:hidden">
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-14 text-center md:text-left">
             <div className="bg-neuBg shadow-neu p-5 rounded-3xl shrink-0">
               <Lightbulb className="h-10 w-10 text-neuGreen fill-neuGreen" />
@@ -892,7 +922,7 @@ export default function ElectricityCalculator({
           </div>
         </section>
 
-        <section id="faqs" className="max-w-4xl mx-auto pb-10">
+        <section id="faqs" className="max-w-4xl mx-auto pb-10 print:hidden">
           <h2 className="text-4xl font-black mb-12 text-center flex items-center justify-center gap-4 text-neuDark">
             <HelpCircle className="text-neuGreen h-10 w-10" /> Frequently Asked Questions
           </h2>
@@ -922,7 +952,7 @@ export default function ElectricityCalculator({
 
       </main>
 
-      <footer className="bg-neuBg shadow-[0_-10px_30px_rgba(209,217,211,0.7)] pt-20 pb-10 mt-10 border-t border-[#e2e8e4]">
+      <footer className="bg-neuBg shadow-[0_-10px_30px_rgba(209,217,211,0.7)] pt-20 pb-10 mt-10 border-t border-[#e2e8e4] print:hidden">
         <div className="max-w-7xl mx-auto px-4">
           <div className="mb-16">
             <h3 className="text-2xl font-black mb-10 text-neuDark flex items-center gap-3">
