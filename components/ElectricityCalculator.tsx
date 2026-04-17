@@ -6,7 +6,7 @@ import {
   Settings, Zap, Lightbulb, ShieldCheck, MapPin, 
   Menu, X, BarChart3, Scale, Info, HelpCircle, ChevronDown, 
   Home, Building2, TrendingUp, DollarSign, ListOrdered, FileSearch, TableProperties,
-  Search, Plus, Minus, Calculator, Snowflake, Tv, Droplets, Laptop, Shirt, Coffee, Wind, Sun
+  Search, Plus, Minus, Calculator, Snowflake, Tv, Droplets, Laptop, Shirt, Coffee, Wind, Sun, Activity
 } from 'lucide-react';
 import type { TariffData, TariffDetails } from '../lib/statesData';
 
@@ -64,18 +64,18 @@ const faqs = [
 
 // --- APPLIANCE LIBRARY DATA ---
 const applianceCatalog = [
-  { id: 'ac-1.5', name: '1.5 Ton AC (Inverter)', watts: 1500, defaultHours: 8, icon: Snowflake },
-  { id: 'ac-1.0', name: '1.0 Ton AC (Inverter)', watts: 1000, defaultHours: 8, icon: Snowflake },
-  { id: 'cooler', name: 'Desert Cooler', watts: 250, defaultHours: 10, icon: Wind },
-  { id: 'bldc-fan', name: 'BLDC Ceiling Fan', watts: 28, defaultHours: 12, icon: Wind },
-  { id: 'fan-std', name: 'Standard Ceiling Fan', watts: 75, defaultHours: 12, icon: Wind },
-  { id: 'fridge', name: 'Refrigerator (250L)', watts: 150, defaultHours: 24, icon: Home },
-  { id: 'led', name: 'LED Tube/Bulb', watts: 20, defaultHours: 6, icon: Lightbulb },
-  { id: 'tv', name: 'LED TV (43")', watts: 60, defaultHours: 4, icon: Tv },
-  { id: 'geyser', name: 'Water Heater/Geyser', watts: 2000, defaultHours: 1, icon: Droplets },
-  { id: 'wm', name: 'Washing Machine', watts: 500, defaultHours: 1, icon: Shirt },
-  { id: 'mixer', name: 'Mixer Grinder', watts: 500, defaultHours: 0.5, icon: Coffee },
-  { id: 'laptop', name: 'Laptop / PC', watts: 65, defaultHours: 6, icon: Laptop },
+  { id: 'ac-1.5', name: '1.5 Ton AC', watts: 1500, defaultHours: 8, icon: Snowflake, color: '#3b82f6' }, // Blue
+  { id: 'ac-1.0', name: '1.0 Ton AC', watts: 1000, defaultHours: 8, icon: Snowflake, color: '#60a5fa' }, // Light Blue
+  { id: 'geyser', name: 'Water Heater', watts: 2000, defaultHours: 1, icon: Droplets, color: '#ef4444' }, // Red
+  { id: 'fridge', name: 'Refrigerator', watts: 150, defaultHours: 24, icon: Home, color: '#f59e0b' }, // Amber
+  { id: 'wm', name: 'Washing Machine', watts: 500, defaultHours: 1, icon: Shirt, color: '#8b5cf6' }, // Purple
+  { id: 'cooler', name: 'Desert Cooler', watts: 250, defaultHours: 10, icon: Wind, color: '#0ea5e9' }, // Cyan
+  { id: 'tv', name: 'LED TV (43")', watts: 60, defaultHours: 4, icon: Tv, color: '#ec4899' }, // Pink
+  { id: 'bldc-fan', name: 'BLDC Fan', watts: 28, defaultHours: 12, icon: Wind, color: '#10b981' }, // Emerald
+  { id: 'fan-std', name: 'Standard Fan', watts: 75, defaultHours: 12, icon: Wind, color: '#34d399' }, // Light Green
+  { id: 'led', name: 'LED Tube/Bulb', watts: 20, defaultHours: 6, icon: Lightbulb, color: '#fcd34d' }, // Yellow
+  { id: 'mixer', name: 'Mixer Grinder', watts: 500, defaultHours: 0.5, icon: Coffee, color: '#6366f1' }, // Indigo
+  { id: 'laptop', name: 'Laptop / PC', watts: 65, defaultHours: 6, icon: Laptop, color: '#64748b' }, // Gray
 ];
 
 interface NeuSelectProps {
@@ -149,7 +149,6 @@ export default function ElectricityCalculator({
     }
   }, [state, connType, tariffData]);
 
-  // Sync Solar Tool with Calculator Units
   useEffect(() => {
     if (billResult?.consumed) {
       setSolarUnitsInput(billResult.consumed.toString());
@@ -211,11 +210,17 @@ export default function ElectricityCalculator({
     });
   };
 
-  const totalApplianceUnits = Object.entries(homeAppliances).reduce((acc, [id, data]) => {
+  const applianceBreakdown = Object.entries(homeAppliances).map(([id, data]) => {
     const app = applianceCatalog.find(a => a.id === id);
-    if (!app) return acc;
-    return acc + ((app.watts * data.hours * data.qty * 30) / 1000);
-  }, 0);
+    if (!app) return { name: 'Unknown', kwh: 0, color: '#cbd5e1' };
+    return {
+      name: app.name,
+      kwh: (app.watts * data.hours * data.qty * 30) / 1000,
+      color: app.color
+    };
+  }).filter(app => app.kwh > 0).sort((a, b) => b.kwh - a.kwh);
+
+  const totalApplianceUnits = applianceBreakdown.reduce((acc, curr) => acc + curr.kwh, 0);
 
   const applyApplianceUnits = () => {
     setUnits(Math.round(totalApplianceUnits).toString());
@@ -227,53 +232,59 @@ export default function ElectricityCalculator({
     app.name.toLowerCase().includes(searchAppliance.toLowerCase())
   );
 
-  // --- Solar ROI Logic (PM Surya Ghar) ---
+  // --- Solar ROI Logic ---
   const calculateSolarROI = () => {
     const monthlyUnits = parseFloat(solarUnitsInput);
     if (isNaN(monthlyUnits) || monthlyUnits <= 0) return null;
 
-    // 1 kW generates approx 120 units/month in India
     let capacity = Math.ceil(monthlyUnits / 120);
     if (capacity < 1) capacity = 1;
 
-    // Standard installation cost: ~Rs 60,000 per kW
     const estimatedCost = capacity * 60000;
-
-    // PM Surya Ghar Subsidy Logic
     let subsidy = 0;
     if (capacity <= 2) {
       subsidy = capacity * 30000;
     } else if (capacity === 3) {
-      subsidy = (2 * 30000) + 18000; // 78,000
+      subsidy = (2 * 30000) + 18000;
     } else {
-      subsidy = 78000; // Max subsidy cap
+      subsidy = 78000; 
     }
 
     const netCost = estimatedCost - subsidy;
-
-    // Estimated Savings (Assuming avg Rs 7.5 per unit saved)
     const avgRate = 7.5; 
-    const monthlySavings = monthlyUnits * avgRate; 
-    const annualSavings = monthlySavings * 12;
-    
+    const annualSavings = (monthlyUnits * avgRate) * 12;
     const paybackYears = (netCost / annualSavings).toFixed(1);
 
-    return {
-      capacity,
-      estimatedCost,
-      subsidy,
-      netCost,
-      annualSavings,
-      paybackYears
-    };
+    return { capacity, estimatedCost, subsidy, netCost, annualSavings, paybackYears };
   };
 
   const solarData = calculateSolarROI();
 
+  // --- Chart Helpers ---
+  const getGaugeColor = (val: number) => {
+    if (val <= 200) return '#10b981'; // Green (Efficient)
+    if (val <= 400) return '#f59e0b'; // Yellow (Average)
+    if (val <= 600) return '#f97316'; // Orange (High)
+    return '#ef4444'; // Red (Excessive)
+  };
+
+  const getGaugeLabel = (val: number) => {
+    if (val <= 200) return 'Highly Efficient';
+    if (val <= 400) return 'Average Usage';
+    if (val <= 600) return 'High Consumption';
+    return 'Excessive Usage';
+  };
+
+  const gaugeValue = parseFloat(units) || 0;
+  const gaugePercent = Math.min(Math.max(gaugeValue / 800, 0), 1); // Cap at 800 for the visual arc
+  const gaugeStrokeDashoffset = 251.2 * (1 - gaugePercent); // 251.2 is approx Math.PI * 80 (radius)
+
+  // Donut Chart Math
+  let cumulativePercent = 0;
+
   const nationalAvg500 = 3500; 
   const safeData = tariffData || {};
   const fallbackTariff = safeData['Maharashtra']?.Domestic || { slabs: [{ max: Infinity, rate: 7.5 }], fixedCharge: 100, meterRent: 10, dutyPercent: 5, fac: 0.1 };
-  
   const selectedNatAvgState500 = calculateEngine(500, safeData[natAvgState]?.Domestic || fallbackTariff).finalTotal;
   const compA500 = calculateEngine(500, safeData[compStateA]?.Domestic || fallbackTariff).finalTotal;
   const compB500 = calculateEngine(500, safeData[compStateB]?.Domestic || fallbackTariff).finalTotal;
@@ -281,7 +292,6 @@ export default function ElectricityCalculator({
   return (
     <div className="min-h-screen bg-neuBg font-sans text-neuDark selection:bg-neuGreen selection:text-white transition-colors duration-300 overflow-x-hidden">
 
-      {/* HEADER */}
       <header className="sticky top-0 z-50 bg-neuBg shadow-neu-sm mb-8 border-b border-[#e2e8e4]">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 cursor-pointer group">
@@ -300,7 +310,6 @@ export default function ElectricityCalculator({
             {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-neuBg shadow-neu px-6 py-6 space-y-4 font-bold text-neuDark absolute w-full z-40 border-t border-[#d1d9d3] origin-top animate-in slide-in-from-top-2">
             <a href="#calculator" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">Calculator</a>
@@ -313,7 +322,6 @@ export default function ElectricityCalculator({
 
       <main className="max-w-7xl mx-auto px-4 space-y-24">
 
-        {/* HERO & MAIN CALCULATOR */}
         <section id="calculator" className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 text-neuDark tracking-tight leading-tight">
@@ -324,7 +332,6 @@ export default function ElectricityCalculator({
 
           <article className="bg-neuBg rounded-[2rem] shadow-neu p-6 md:p-10 transition-all duration-300 mb-16 border border-[#e2e8e4]">
             
-            {/* Input Mode Toggles */}
             <div className="flex bg-neuBg shadow-neu-inset rounded-xl p-1 mb-8 w-full md:w-fit mx-auto">
               <button 
                 onClick={() => setInputMode('manual')} 
@@ -429,7 +436,7 @@ export default function ElectricityCalculator({
                     const Icon = app.icon;
 
                     return (
-                      <div key={app.id} className={`p-5 rounded-[1.5rem] transition-all duration-300 ${qty > 0 ? 'shadow-neu-inset border-2 border-neuGreen/30' : 'shadow-neu border-2 border-transparent'}`}>
+                      <div key={app.id} className={`p-5 rounded-[1.5rem] transition-all duration-300 ${qty > 0 ? 'shadow-neu-inset border-2 border-[#d1d9d3]' : 'shadow-neu border-2 border-transparent'}`}>
                          <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center gap-4">
                                <div className="bg-neuBg shadow-neu p-2.5 rounded-xl text-neuGreen shrink-0">
@@ -480,8 +487,121 @@ export default function ElectricityCalculator({
             )}
           </article>
 
-          {/* RESULTS CARD */}
-          {billResult && inputMode === 'manual' && (
+          {/* --- NEW: ENERGY ANALYTICS VISUALIZERS --- */}
+          {billResult && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16 animate-in slide-in-from-bottom-8">
+              
+              {/* Custom SVG Gauge (Efficiency Meter) */}
+              <div className="bg-neuBg rounded-[2rem] p-8 shadow-neu border border-[#e2e8e4]">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="font-black text-xl text-neuDark">Efficiency Gauge</h3>
+                    <p className="text-sm text-gray-500 font-medium">Your monthly consumption profile.</p>
+                  </div>
+                  <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><Activity className="h-5 w-5 text-neuGreen" /></div>
+                </div>
+
+                <div className="relative w-full h-48 flex items-end justify-center pt-8 overflow-hidden">
+                  <svg viewBox="0 0 200 100" className="w-full max-w-[300px] overflow-visible">
+                    {/* Track */}
+                    <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#d1d9d3" strokeWidth="20" strokeLinecap="round" className="drop-shadow-[inset_2px_2px_4px_rgba(0,0,0,0.1)]" />
+                    {/* Fill */}
+                    <path 
+                      d="M 20 100 A 80 80 0 0 1 180 100" 
+                      fill="none" 
+                      stroke={getGaugeColor(gaugeValue)} 
+                      strokeWidth="20" 
+                      strokeLinecap="round"
+                      strokeDasharray="251.2"
+                      strokeDashoffset={gaugeStrokeDashoffset}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                    {/* Tick Markers */}
+                    <line x1="20" y1="100" x2="10" y2="100" stroke="#a0aec0" strokeWidth="3" />
+                    <line x1="180" y1="100" x2="190" y2="100" stroke="#a0aec0" strokeWidth="3" />
+                    <line x1="100" y1="20" x2="100" y2="10" stroke="#a0aec0" strokeWidth="3" />
+                  </svg>
+                  <div className="absolute bottom-2 flex flex-col items-center">
+                    <span className="text-4xl font-black text-neuDark">{gaugeValue}</span>
+                    <span className="text-sm font-bold uppercase tracking-widest text-gray-500">{getGaugeLabel(gaugeValue)}</span>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between text-xs font-bold text-gray-400 mt-6 pt-4 border-t border-[#d1d9d3] px-2">
+                  <span>0<br/>Good</span>
+                  <span className="text-center">400<br/>Avg</span>
+                  <span className="text-right">800+<br/>High</span>
+                </div>
+              </div>
+
+              {/* Custom SVG Donut Chart (Energy Hogs) */}
+              <div className="bg-neuBg rounded-[2rem] p-8 shadow-neu border border-[#e2e8e4]">
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="font-black text-xl text-neuDark">Energy Breakdown</h3>
+                    <p className="text-sm text-gray-500 font-medium">Top appliance power consumers.</p>
+                  </div>
+                  <div className="bg-neuBg shadow-neu-inset p-2.5 rounded-xl"><Scale className="h-5 w-5 text-neuGreen" /></div>
+                </div>
+
+                {applianceBreakdown.length > 0 ? (
+                  <div className="flex flex-col sm:flex-row items-center gap-8 h-full pb-4">
+                    {/* Donut Graphic */}
+                    <div className="relative w-40 h-40 shrink-0">
+                      <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-md">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#d1d9d3" strokeWidth="12" />
+                        {applianceBreakdown.map((app, i) => {
+                          const percent = app.kwh / totalApplianceUnits;
+                          const offset = 251.2 - (percent * 251.2);
+                          const currentAccum = cumulativePercent;
+                          cumulativePercent += percent;
+                          
+                          return (
+                            <circle 
+                              key={i}
+                              cx="50" cy="50" r="40" 
+                              fill="none" 
+                              stroke={app.color} 
+                              strokeWidth="12"
+                              strokeDasharray="251.2"
+                              strokeDashoffset={offset}
+                              strokeLinecap="round"
+                              className="transition-all duration-1000"
+                              style={{ transformOrigin: 'center', transform: `rotate(${currentAccum * 360}deg)` }}
+                            />
+                          );
+                        })}
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center flex-col">
+                        <Zap className="h-6 w-6 text-gray-400" />
+                      </div>
+                    </div>
+                    
+                    {/* Legend */}
+                    <div className="w-full space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                      {applianceBreakdown.slice(0, 5).map((app, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 truncate">
+                            <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: app.color }}></div>
+                            <span className="text-sm font-bold text-gray-600 truncate">{app.name}</span>
+                          </div>
+                          <span className="text-sm font-black text-neuDark ml-2">{Math.round((app.kwh / totalApplianceUnits) * 100)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-48 w-full flex flex-col items-center justify-center bg-neuBg shadow-neu-inset rounded-xl border border-[#d1d9d3]">
+                    <Search className="h-8 w-8 text-gray-400 mb-3" />
+                    <p className="text-sm font-bold text-gray-500 text-center px-4">Use the Appliance Library above to see your customized breakdown.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* DETAILED RESULTS BREAKDOWN CARD */}
+          {billResult && (
             <div className="bg-neuBg rounded-[2rem] p-8 md:p-12 shadow-neu border-t-8 border-neuGreen transition-all duration-500 mb-16 animate-in slide-in-from-bottom-8">
                <div className="text-center mb-10">
                  <p className="text-gray-500 font-bold uppercase tracking-widest text-sm mb-4">Estimated Total Bill</p>
