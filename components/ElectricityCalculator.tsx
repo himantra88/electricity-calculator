@@ -6,7 +6,7 @@ import {
   Settings, Zap, Lightbulb, ShieldCheck, MapPin, 
   Menu, X, BarChart3, Scale, Info, HelpCircle, ChevronDown, 
   Home, Building2, TrendingUp, DollarSign, ListOrdered, FileSearch, TableProperties,
-  Search, Plus, Minus, Calculator, Snowflake, Tv, Droplets, Laptop, Shirt, Coffee, Wind
+  Search, Plus, Minus, Calculator, Snowflake, Tv, Droplets, Laptop, Shirt, Coffee, Wind, Sun
 } from 'lucide-react';
 import type { TariffData, TariffDetails } from '../lib/statesData';
 
@@ -78,16 +78,6 @@ const applianceCatalog = [
   { id: 'laptop', name: 'Laptop / PC', watts: 65, defaultHours: 6, icon: Laptop },
 ];
 
-// --- REUSABLE WIDGETS ---
-// AdUnit commented out for now
-// const AdUnit = ({ className = "my-8 rounded-2xl overflow-hidden shadow-neu-inset bg-neuBg border border-[#e2e8e4]" }) => (
-//   <aside className={`w-full ${className}`}>
-//     <div className="adsbygoogle-placeholder w-full h-[100px] flex items-center justify-center text-sm font-bold text-gray-400 uppercase tracking-widest">
-//       Advertisement Space
-//     </div>
-//   </aside>
-// );
-
 interface NeuSelectProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -141,6 +131,9 @@ export default function ElectricityCalculator({
   const [searchAppliance, setSearchAppliance] = useState('');
   const [homeAppliances, setHomeAppliances] = useState<Record<string, {qty: number, hours: number}>>({});
 
+  // Solar ROI State
+  const [solarUnitsInput, setSolarUnitsInput] = useState('');
+
   // Widget States
   const [compStateA, setCompStateA] = useState('Maharashtra');
   const [compStateB, setCompStateB] = useState('Delhi');
@@ -155,6 +148,13 @@ export default function ElectricityCalculator({
       setBillResult(null); 
     }
   }, [state, connType, tariffData]);
+
+  // Sync Solar Tool with Calculator Units
+  useEffect(() => {
+    if (billResult?.consumed) {
+      setSolarUnitsInput(billResult.consumed.toString());
+    }
+  }, [billResult]);
 
   const calculateEngine = (calcUnits: number, calcTariff: TariffDetails): Omit<BillResult, 'consumed'> => {
     let remainingUnits = calcUnits;
@@ -227,6 +227,49 @@ export default function ElectricityCalculator({
     app.name.toLowerCase().includes(searchAppliance.toLowerCase())
   );
 
+  // --- Solar ROI Logic (PM Surya Ghar) ---
+  const calculateSolarROI = () => {
+    const monthlyUnits = parseFloat(solarUnitsInput);
+    if (isNaN(monthlyUnits) || monthlyUnits <= 0) return null;
+
+    // 1 kW generates approx 120 units/month in India
+    let capacity = Math.ceil(monthlyUnits / 120);
+    if (capacity < 1) capacity = 1;
+
+    // Standard installation cost: ~Rs 60,000 per kW
+    const estimatedCost = capacity * 60000;
+
+    // PM Surya Ghar Subsidy Logic
+    let subsidy = 0;
+    if (capacity <= 2) {
+      subsidy = capacity * 30000;
+    } else if (capacity === 3) {
+      subsidy = (2 * 30000) + 18000; // 78,000
+    } else {
+      subsidy = 78000; // Max subsidy cap
+    }
+
+    const netCost = estimatedCost - subsidy;
+
+    // Estimated Savings (Assuming avg Rs 7.5 per unit saved)
+    const avgRate = 7.5; 
+    const monthlySavings = monthlyUnits * avgRate; 
+    const annualSavings = monthlySavings * 12;
+    
+    const paybackYears = (netCost / annualSavings).toFixed(1);
+
+    return {
+      capacity,
+      estimatedCost,
+      subsidy,
+      netCost,
+      annualSavings,
+      paybackYears
+    };
+  };
+
+  const solarData = calculateSolarROI();
+
   const nationalAvg500 = 3500; 
   const safeData = tariffData || {};
   const fallbackTariff = safeData['Maharashtra']?.Domestic || { slabs: [{ max: Infinity, rate: 7.5 }], fixedCharge: 100, meterRent: 10, dutyPercent: 5, fac: 0.1 };
@@ -249,27 +292,26 @@ export default function ElectricityCalculator({
           </Link>
           <nav className="hidden md:flex gap-8 font-bold text-sm text-gray-600">
             <a href="#calculator" className="hover:text-neuGreen transition-colors duration-300">Calculator</a>
+            <a href="#solar" className="hover:text-neuGreen transition-colors duration-300">Solar ROI</a>
             <a href="#compare" className="hover:text-neuGreen transition-colors duration-300">Compare</a>
-            <a href="#lookup" className="hover:text-neuGreen transition-colors duration-300">Tariff Lookup</a>
-            <a href="#faqs" className="hover:text-neuGreen transition-colors duration-300">FAQs</a>
+            <a href="#lookup" className="hover:text-neuGreen transition-colors duration-300">Tariffs</a>
           </nav>
           <button className="md:hidden text-neuDark bg-neuBg shadow-neu active:shadow-neu-inset p-2.5 rounded-xl transition-all duration-300" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
+        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden bg-neuBg shadow-neu px-6 py-6 space-y-4 font-bold text-neuDark absolute w-full z-40 border-t border-[#d1d9d3] origin-top animate-in slide-in-from-top-2">
             <a href="#calculator" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">Calculator</a>
+            <a href="#solar" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">Solar ROI</a>
             <a href="#compare" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">Compare</a>
             <a href="#lookup" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">Tariff Lookup</a>
-            <a href="#faqs" onClick={()=>setIsMenuOpen(false)} className="block px-4 py-3 bg-neuBg shadow-neu hover:shadow-neu-inset rounded-xl transition-all duration-300 text-center">FAQs</a>
           </div>
         )}
       </header>
 
       <main className="max-w-7xl mx-auto px-4 space-y-24">
-        
-        {/* <div className="max-w-4xl mx-auto"><AdUnit /></div> */}
 
         {/* HERO & MAIN CALCULATOR */}
         <section id="calculator" className="max-w-4xl mx-auto">
@@ -466,33 +508,68 @@ export default function ElectricityCalculator({
                </div>
             </div>
           )}
-
-          {/* HOW TO USE GUIDE */}
-          <div className="mt-20">
-            <h2 className="text-3xl font-black mb-10 flex items-center justify-center gap-4 text-neuDark">
-              <ListOrdered className="text-neuGreen h-8 w-8" /> How to Use This Calculator
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-neuBg shadow-neu hover:shadow-neu-inset p-8 rounded-[2rem] text-center transition-all duration-300 border border-[#e2e8e4]">
-                <div className="bg-neuBg shadow-neu-inset w-16 h-16 mx-auto flex justify-center items-center rounded-2xl mb-6 text-neuGreen font-black text-2xl">1</div>
-                <h4 className="font-black text-neuDark mb-3 text-lg">Select Your State</h4>
-                <p className="text-sm text-gray-500 font-medium leading-relaxed">Choose your location to automatically load the latest government tariff slabs.</p>
-              </div>
-              <div className="bg-neuBg shadow-neu hover:shadow-neu-inset p-8 rounded-[2rem] text-center transition-all duration-300 border border-[#e2e8e4]">
-                <div className="bg-neuBg shadow-neu-inset w-16 h-16 mx-auto flex justify-center items-center rounded-2xl mb-6 text-neuGreen font-black text-2xl">2</div>
-                <h4 className="font-black text-neuDark mb-3 text-lg">Enter Units (kWh)</h4>
-                <p className="text-sm text-gray-500 font-medium leading-relaxed">Type your consumed units or use the <strong>Appliance Library</strong> to estimate them.</p>
-              </div>
-              <div className="bg-neuBg shadow-neu hover:shadow-neu-inset p-8 rounded-[2rem] text-center transition-all duration-300 border border-[#e2e8e4]">
-                <div className="bg-neuBg shadow-neu-inset w-16 h-16 mx-auto flex justify-center items-center rounded-2xl mb-6 text-neuGreen font-black text-2xl">3</div>
-                <h4 className="font-black text-neuDark mb-3 text-lg">Generate Bill</h4>
-                <p className="text-sm text-gray-500 font-medium leading-relaxed">Click calculate to see a detailed breakdown of fixed charges, taxes, and energy costs.</p>
-              </div>
-            </div>
-          </div>
         </section>
 
-        {/* <AdUnit /> */}
+        {/* --- SOLAR ROI ESTIMATOR --- */}
+        <section id="solar" className="max-w-4xl mx-auto">
+          <div className="bg-neuBg rounded-[2rem] shadow-neu p-8 md:p-12 border border-[#e2e8e4] relative overflow-hidden">
+            <div className="absolute -top-10 -right-10 opacity-10 pointer-events-none">
+              <Sun size={200} className="text-yellow-500 fill-yellow-500 animate-spin-slow" />
+            </div>
+            
+            <div className="mb-10 relative z-10">
+              <h2 className="text-3xl font-black text-neuDark flex items-center gap-3 mb-2">
+                <div className="bg-neuBg shadow-neu p-2.5 rounded-xl"><Sun className="h-6 w-6 text-yellow-500 fill-yellow-500" /></div>
+                Solar ROI Estimator
+              </h2>
+              <p className="text-gray-500 font-medium ml-1">Calculate your savings under the <span className="font-bold text-neuDark">PM Surya Ghar Yojana</span>.</p>
+            </div>
+
+            <div className="bg-neuBg shadow-neu-inset rounded-2xl p-6 mb-10 relative z-10 flex flex-col md:flex-row items-center gap-6">
+              <div className="w-full md:w-1/2">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 ml-2">Monthly Consumption (Units)</label>
+                <input 
+                  type="number" 
+                  placeholder="e.g. 350" 
+                  value={solarUnitsInput} 
+                  onChange={(e) => setSolarUnitsInput(e.target.value)} 
+                  className="w-full bg-neuBg shadow-neu focus:shadow-neu-inset rounded-xl px-5 py-4 font-black text-xl text-neuDark outline-none transition-all duration-300" 
+                />
+              </div>
+              <div className="w-full md:w-1/2 flex items-center justify-center pt-2 md:pt-6">
+                {solarUnitsInput && parseFloat(solarUnitsInput) > 0 ? (
+                   <div className="text-center w-full">
+                     <p className="text-gray-500 font-bold text-sm mb-1">Recommended Plant Size</p>
+                     <p className="text-3xl font-black text-neuGreen drop-shadow-sm">{solarData?.capacity} <span className="text-xl text-neuDark">kW</span></p>
+                   </div>
+                ) : (
+                   <p className="text-sm text-gray-400 font-bold text-center w-full">Enter units to see recommended kW</p>
+                )}
+              </div>
+            </div>
+
+            {solarData && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 relative z-10 animate-in fade-in duration-500">
+                <div className="bg-neuBg shadow-neu p-6 rounded-2xl text-center">
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Est. Cost</p>
+                  <p className="text-xl font-black text-neuDark">₹{solarData.estimatedCost.toLocaleString()}</p>
+                </div>
+                <div className="bg-neuBg shadow-neu p-6 rounded-2xl text-center">
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Govt. Subsidy</p>
+                  <p className="text-xl font-black text-green-500 drop-shadow-sm">-₹{solarData.subsidy.toLocaleString()}</p>
+                </div>
+                <div className="bg-neuBg shadow-neu p-6 rounded-2xl text-center border-b-4 border-neuGreen sm:border-b-0">
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Net Investment</p>
+                  <p className="text-xl font-black text-neuDark">₹{solarData.netCost.toLocaleString()}</p>
+                </div>
+                <div className="bg-neuBg shadow-neu p-6 rounded-2xl text-center border-b-4 border-yellow-500 sm:border-b-0">
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Payback Period</p>
+                  <p className="text-xl font-black text-neuDark">{solarData.paybackYears} <span className="text-sm text-gray-500">Yrs</span></p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* DATA VISUALIZERS */}
         <section id="compare" className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -724,8 +801,6 @@ export default function ElectricityCalculator({
         </section>
 
       </main>
-
-      {/* <div className="max-w-7xl mx-auto px-4 mb-20"><AdUnit /></div> */}
 
       <footer className="bg-neuBg shadow-[0_-10px_30px_rgba(209,217,211,0.7)] pt-20 pb-10 mt-10 border-t border-[#e2e8e4]">
         <div className="max-w-7xl mx-auto px-4">
